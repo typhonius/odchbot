@@ -1,0 +1,47 @@
+--- 
+config: 
+  alert_iterations: 0
+  alert_message: ''
+  allow_anon: 0
+  allow_external: 1
+  allow_passive: 1
+  ban_handler: bot
+  botdescription: I am Dragon, hear me RAWR
+  botemail: dragon@locahost
+  botname: Dragon
+  botshare: 136571
+  botspeed: LAN(T1)
+  bottag: RAWRDC++
+  commandPath: commands
+  cp: "-"
+  db: 
+    database: odchbot.db
+    driver: SQLite
+    host: ''
+    password: ''
+    path: logs
+    port: ''
+    username: ''
+  debug: 101
+  default_kick: You have been kicked
+  history_default: 10
+  history_max: 100
+  hubname: Dragon IRC Chat
+  hubname_short: IRC_Chat
+  maintainer_email: odchbot@gmail.com
+  min_username: 3
+  minshare: '5368709120'
+  no_perms: You do not have adequate permissions to use this function!
+  opgreeting: Did it just get hotter in here? Welcome back,
+  opgreetingon: 1
+  timezone: Australia/Canberra
+  topic: Welcome to ODCH!
+  usergreeting: Welcome
+  usergreetingon: 0
+  username_anonymous: Anonymous
+  username_max_length: 35
+  version: v3
+  webcontact: $website/contact
+  website: http://example.com
+  winning_default: 10
+  winning_max: 100

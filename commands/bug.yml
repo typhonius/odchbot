@@ -1,0 +1,10 @@
+name: bug
+description: Submit a bug report to the developer
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+

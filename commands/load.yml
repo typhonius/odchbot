@@ -1,0 +1,6 @@
+name: load
+description: Loads a command (has the effect of installing new commands)
+required: 1
+system: 1
+permissions:
+ - ADMINISTRATOR

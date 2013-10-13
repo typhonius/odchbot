@@ -1,0 +1,8 @@
+name: coin
+description: Let the bot flip a coin for all your life decisions
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

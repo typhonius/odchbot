@@ -1,0 +1,13 @@
+name: user
+description: Performs system hooks for users
+required: 1
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - prelogin
+ - postlogin
+ - logout

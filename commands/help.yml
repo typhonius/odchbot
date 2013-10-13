@@ -1,0 +1,9 @@
+name: help
+description: Provides users with help when no human can help them.
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

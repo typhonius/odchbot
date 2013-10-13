@@ -1,0 +1,10 @@
+name: karma
+description: Gives the link to the Chaotic Neutral karma page
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - line

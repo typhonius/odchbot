@@ -1,0 +1,9 @@
+name: first
+description: Displays the first line a user spoke.
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

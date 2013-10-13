@@ -1,0 +1,6 @@
+name: reload
+description: Reloads commands for updates and new features
+required: 1
+system: 1
+permissions:
+ - ADMINISTRATOR

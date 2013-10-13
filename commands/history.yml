@@ -1,0 +1,13 @@
+name: history
+description: Displays chat history for the user
+required: 1
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - h
+hooks:
+ - line

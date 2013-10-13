@@ -1,0 +1,8 @@
+name: winning
+description: Returns a list of longest logged on users
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

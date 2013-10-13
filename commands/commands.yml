@@ -1,0 +1,8 @@
+name: commands
+description: Shows a list of all commands. Use -commands <commandname> for detailed information about specific commands.
+required: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

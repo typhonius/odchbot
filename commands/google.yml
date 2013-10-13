@@ -1,0 +1,8 @@
+name: google
+description: Google search the phrase entered
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

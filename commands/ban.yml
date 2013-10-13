@@ -1,0 +1,11 @@
+name: ban
+description: Ban a user for a specified amount of time
+required: 1
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - tban
+hooks:
+ - prelogin
+ - timer

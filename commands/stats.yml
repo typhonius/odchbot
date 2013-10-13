@@ -1,0 +1,12 @@
+name: stats
+description: Displays user and hub stats
+required: 1
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - timer
+ - init

@@ -1,0 +1,12 @@
+name: topic
+description: Sets the topic for the hub
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - init
+ - postlogin

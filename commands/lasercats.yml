@@ -1,0 +1,8 @@
+name: lasercats
+description: Because lasercats
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

@@ -1,0 +1,11 @@
+name: magic_8ball
+description: Rubs the magic 8ball on behalf of the user
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - 8ball
+hooks:

@@ -1,0 +1,9 @@
+name: info
+description: Provides information about users
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

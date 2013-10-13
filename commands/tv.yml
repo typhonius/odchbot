@@ -1,0 +1,11 @@
+name: tv
+description: Shows data about the next episode of a TV show
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - episode
+ - show

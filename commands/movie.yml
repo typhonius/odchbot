@@ -1,0 +1,8 @@
+name: movie
+description: MovieBot will suggest a random movie for you to watch
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

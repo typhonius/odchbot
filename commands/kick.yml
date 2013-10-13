@@ -1,0 +1,6 @@
+name: kick
+description: Kick a specified user, additionally sending them a kick message
+required: 0
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR

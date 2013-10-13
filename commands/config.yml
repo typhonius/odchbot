@@ -1,0 +1,6 @@
+name: config
+description: 'Gets or sets config for the bot. Usage: -config shows all config - -config get <key> shows the value for the specified key - -config set <key> <value> sets the <key> to be <value>'
+required: 1
+system: 1
+permissions:
+ - ADMINISTRATOR

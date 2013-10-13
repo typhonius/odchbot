@@ -1,0 +1,6 @@
+name: unload
+description: Completely uninstalls commands and data (use with caution)
+required: 1
+system: 1
+permissions:
+ - ADMINISTRATOR

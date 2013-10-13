@@ -1,0 +1,9 @@
+name: time
+description: Returns local time of a UNIX time passed to the command
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

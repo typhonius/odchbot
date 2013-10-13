@@ -1,0 +1,10 @@
+name: say
+description: Allows users to spoof as other users
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - line

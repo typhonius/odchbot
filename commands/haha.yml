@@ -1,0 +1,8 @@
+name: haha
+description: The user has a random chance of getting kicked depending on the roll of a dice. 
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Cwd 'abs_path';
+use File::Basename;
+use Module::Load;
+
+my ( $file, $cwd ) = fileparse( abs_path(__FILE__) );
+my @files = glob($cwd . '*.pm');
+push(@files, glob($cwd . 'commands/*.pm'));
+
+for (@files) {
+  # Load all files for perl to check for syntax
+  load $_;
+}
+
+
+

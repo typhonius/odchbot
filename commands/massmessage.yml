@@ -1,0 +1,9 @@
+name: massmessage
+description: Send a message to everyone on the hub
+required: 0
+system: 1
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - mm

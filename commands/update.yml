@@ -1,0 +1,6 @@
+name: update
+description: Pulls the latest updates from the git repository and applies them to the bot
+required: 1
+system: 1
+permissions:
+ - ADMINISTRATOR

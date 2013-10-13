@@ -1,0 +1,11 @@
+name: russianroulette
+description: Yah feeling lucky, punk? Chance of kicking the user who invokes it
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - rr

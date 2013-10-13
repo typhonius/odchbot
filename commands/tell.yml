@@ -1,0 +1,12 @@
+name: tell
+description: Leave messages for other users when they are either offline or away.
+required: 0
+system: 1
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - postlogin
+ - line

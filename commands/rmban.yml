@@ -1,0 +1,6 @@
+name: rmban
+description: Unbans banned users
+required: 1
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR

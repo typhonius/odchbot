@@ -1,0 +1,10 @@
+name: rules
+description: Gives the link to the current rules page on the website
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+

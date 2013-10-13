@@ -1,0 +1,9 @@
+name: weather
+description: Show 3-day forecast for home city
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+

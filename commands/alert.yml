@@ -1,0 +1,9 @@
+name: alert
+description: Allows users with requisite permissions to set repeatable alert messages from the bot.
+required: 0
+system: 1
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - timer

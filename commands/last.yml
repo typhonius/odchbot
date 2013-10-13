@@ -1,0 +1,9 @@
+name: last
+description: Displays the most recent line a user spoke.
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

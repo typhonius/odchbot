@@ -1,0 +1,9 @@
+name: toggle
+description: Allows the status of commands to be turned on and off
+required: 0
+system: 1
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - alter
