@@ -1,0 +1,6 @@
+name: search
+description: Allows users to search chat history
+required: 0
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
