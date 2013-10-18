@@ -6,4 +6,6 @@ permissions:
  - AUTHENTICATED
  - OPERATOR
  - ADMINISTRATOR
+hooks:
+ - timer
 
