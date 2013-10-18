@@ -2,7 +2,7 @@
 config: 
   alert_iterations: 0
   alert_message: ''
-  allow_anon: 0
+  allow_anon: 1
   allow_external: 1
   allow_passive: 1
   ban_handler: bot
