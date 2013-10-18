@@ -10,6 +10,16 @@ use DCBDatabase;
 use DCBCommon;
 use DCBUser;
 
+sub schema {
+  my %schema = (
+    config => {
+      user_op_login_notify => 1,
+      user_op_login_notify_message => "Welcome online",
+    },
+  );
+  return \%schema;
+}
+
 sub postlogin {
   my $command = shift;
   my $user = shift;
@@ -37,6 +47,20 @@ sub postlogin {
       },
     );
   }
+  # Allow Ops/Op-admin users to be shown to enter
+  if ($user->{permission} >= 16  && $DCBSettings::config->{user_op_login_notify}) {
+    my @op_notify = (
+      {
+        param    => "message",
+        message  => $DCBSettings::config->{user_op_login_notify_message} . " $user->{name}",
+        user     => $user->{name},
+        fromuser   => '',
+        type     => 4,
+      },
+    );
+    push(@return, @op_notify);
+  }
+
   # Provide the user with additional welcome information
   my $permissions = DCBUser::PERMISSIONS;
   my %perm = %{$permissions};
