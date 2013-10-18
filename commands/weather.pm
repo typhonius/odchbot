@@ -26,9 +26,28 @@ sub schema {
 sub main {
   my $command = shift;
   my $user = shift;
-  my $message = "Weather:\n";
+  my $message = '';
 
   if (!$DCBCommon::COMMON->{'weather'} || time() - DCBSettings::config_get('weather_last_called') > DCBSettings::config_get('weather_cache_time')) {
+    $message = weather_fetch_weather();
+  }
+  else {
+    $message = $DCBCommon::COMMON->{'weather'};
+  }
+
+  my @return = (
+    {
+      param    => "message",
+      message  => $message,
+      user     => $user->{name},
+      touser   => '',
+      type     => 2,
+    },
+  );
+  return @return;
+}
+
+sub weather_fetch_weather {
     my $weather_feed = DCBSettings::config_get('weather_feed');
     my $content = get($weather_feed);
     my $data = XMLin($content);
@@ -45,6 +64,7 @@ sub main {
       Rain since 9am: $c->{rain} mm
 EOF
 
+    my $message = "Weather:\n";
     $message .= "Current conditions:\n" . $current;
 
     $message .= "\n3-day forecast:\n";
@@ -57,20 +77,16 @@ EOF
     }
     $DCBCommon::COMMON->{'weather'} = $message;
     DCBSettings::config_set('weather_last_called', time());
-  }
-  else {
-    $message = $DCBCommon::COMMON->{'weather'};
-  }
+    return $message;
 
-  my @return = (
-    {
-      param    => "message",
-      message  => $message,
-      user     => $user->{name},
-      touser   => '',
-      type     => 2,
-    },
-  );
+}
+
+sub timer {
+  if (!$DCBCommon::COMMON->{'weather'} || time() - DCBSettings::config_get('weather_last_called') > DCBSettings::config_get('weather_cache_time')) {
+    my $weather = weather_fetch_weather();
+    DCBSettings::config_set('weather_last_called', time());
+  }
+  my @return = ();
   return @return;
 }
 
