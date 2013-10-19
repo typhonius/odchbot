@@ -58,6 +58,8 @@ eval {
 };
 if ($@) {
   odch_sendmessage("","",4,"$@");
+  odch_debug("init","","$@");
+  die;
 }
 
 sub main() {
@@ -331,7 +333,7 @@ sub odch_sendtoadmins() {
 }
 
 # use carp / croak instead
-sub odch_debug() {
+sub odch_debug {
   my $action = shift;
   my $user = shift;
   my $debug = shift;
