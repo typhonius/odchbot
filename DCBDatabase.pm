@@ -12,6 +12,7 @@ use Exporter;
 our @ISA = qw( Exporter );
 our @EXPORT = qw( db_insert db_select db_update db_delete db_do );
 
+use Module::Load;
 use FindBin;
 use lib "$FindBin::Bin";
 use DCBSettings;
@@ -36,6 +37,16 @@ sub db_init() {
 sub db_connect {
   my $db  = $DCBSettings::config->{db};
   my $dsn = "dbi:$db->{driver}:";
+  my $module = 'DBD::' . $db->{driver};
+
+  # If the specific DB driver module is not installed we must error out as otherwise nothing will get installed.
+  eval {
+    load $module;
+    $module->import();
+  };
+  if ($@) {
+    die "Required module $module missing! Unable to connect to database."
+  }
 
   switch ( $db->{driver} ) {
     case /^SQLite/ {
