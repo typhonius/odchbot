@@ -151,7 +151,7 @@ sub odch_login() {
 
   if (@errors) {
     # TODO put odch_respond here
-    odch_sendmessage($user->{name}, "", 2, @errors);
+    odch_sendmessage($user->{name}, "", 2, join("\n", @errors));
     odch_odch('kick', $user->{name});
     return;
   }

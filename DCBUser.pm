@@ -65,7 +65,6 @@ sub user_load($) {
 
 sub user_connect($) {
   my $user = shift;
-  # can we just insert all fields k/v style?
   my %fields = (
     'ip' => $user->{ip},
     'permission' => $user->{permission},
@@ -155,6 +154,10 @@ sub user_check_errors($) {
   if (!$DCBSettings::config->{allow_passive} && $user->{'connection_type'} =~ /passive/) {
     push(@errors, "Passive users are not currently accepted.");
   }
+  # If we're dealing with an op/op-admin then disregard all errors
+  if (user_is_admin($user)) {
+    @errors = ();
+  }
 
   return @errors;
 }
@@ -165,49 +168,18 @@ sub user_invalid_name($) {
   if (length($name) > $DCBSettings::config->{username_max_length}) {
     push(@errors, "Name length exceeds maximum of $DCBSettings::config->{username_max_length}");
   }
+  if (($name !~ /[\w-]+/) || ($name =~ /[\\\/]/)) {
+    push(@errors, "Name contains illegal characters. Letters, numbers, underscores and hyphens only.");
+  }
   return @errors;
 }
 
-sub user_valid_name_regex($) {
-  # perhaps use this function or a $config for regex to display to the user (A-Z a-z 0-9 _ I think would be good)
+sub user_is_admin() {
+  my $user = shift;
+  if ($user->{'permission'} >= 16) {
+    return 1;
+  }
+  return 0;
 }
-#TODO
-# disallow the Anonymous username and the bot username
-
-#   $login = 0;
-#   my ($namecheck_user) = @_;
-#
-#   elsif ($namecheck_user =~ /unconfigured-valknut-client/i) {
-#     $pm .= "$user, Please configure your username as per the instructions here: http://chaoticneutral.ath.cx/faq/mac-name.html\n";
-#   }
-#   elsif ($namecheck_user =~ /.*\W.*/ || $namecheck_user =~ /.*\W.*/) {
-#     $pm .= "Your name is $user, Please remove all disallowed characters from your username\n\nAllowed characters:\n * Letters\n * Numbers\n * Underscores\n";
-#   }
-#   elsif ($namecheck_user =~ /.*\/.*/ || $namecheck_user =~ /.*\\.*/) {
-#     $pm .= "Please remove all slashes from your username.\n";
-#   }
-#   elsif (length($namecheck_user) < $config{min_username}) {
-#     $pm .= "Please ensure your name is longer than " . $config{min_username} . " characters then attempt to log on again.";
-#   }
-#   else{
-#     $login = 1;
-#   }
-#   return $login;
-# }
-
-# if ($user_perm == 0 && namecheck($user) == 1) {
-#   $login = 1;
-# }
-# if ($user_perm >= 1) {
-#   $login = 1;
-# }
-# if ($user_perm > 1 && $config{opgreetingon}) {
-#   $public = $config{opgreeting} . " " . $user;
-# }
-# if ($user_perm <= 1 && $user_share <= 0) {
-#   $login = 1;
-# #if ($user_perm <= 1 && $Config{usergreetingon}) {
-# #  $public = $Config{usergreeting} . " " . $user;
-# #}
 
 1;
