@@ -11,6 +11,7 @@ before_install:
   - cpanm DateTime::Duration
   - cpanm DateTime::Format::Duration
   - cpanm DBI
+  - cpanm DBD::SQLite
   - cpanm Exporter
   - cpanm IPC::System::Simple --force
   - cpanm Log::Log4perl
