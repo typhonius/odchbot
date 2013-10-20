@@ -174,7 +174,7 @@ sub user_invalid_name($) {
   return @errors;
 }
 
-sub user_is_admin() {
+sub user_is_admin {
   my $user = shift;
   if ($user->{'permission'} >= 16) {
     return 1;
