@@ -44,7 +44,8 @@ eval {
   $Common->commands_init();
 
   our $User = new DCBUser;
-  my $user_list = odch_get('user_list');
+  # During testing this function should not try to call an odch function.
+  my $user_list = exists &odch::data_to_all ? odch_get('user_list') : '';
   $User->user_init($user_list);
 
   # We need to manually set the log location using $cwd - disable until we can do that
