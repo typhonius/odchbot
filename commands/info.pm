@@ -38,13 +38,16 @@ sub main {
       $message .= "\nUID: " . $target->{uid};
       $message .= "\nJoined: " . DCBCommon::common_timestamp_time($target->{join_time});
       $message .= "\nConnected: " . DCBCommon::common_timestamp_time($target->{connect_time});
-      $message .= "\nDisconnected: " . DCBCommon::common_timestamp_time($target->{disconnect_time});
+      # Brand new users will not have a disconnect time so omit that if one is not present.
+      if ($target->{disconnect_time}) {
+        $message .= "\nDisconnected: " . DCBCommon::common_timestamp_time($target->{disconnect_time});
+      }
       $message .= "\nFirst Share: " . DCBCommon::common_format_size($target->{join_share});
       $message .= "\nRecent Share: " . DCBCommon::common_format_size($target->{connect_share});
       $message .= "\nShare Difference: " . DCBCommon::common_format_size($target->{connect_share} - $target->{join_share});
       $message .= "\nPermission: " . $perm;
       $message .= "\nClient: " . $target->{client};
-      $message .= "\nStatus: " . ($target->{connect_time} > $target->{disconnect_time} ? "Online for: " . DCBCommon::common_timestamp_duration($target->{connect_time}) : "Offline");
+      $message .= "\nStatus: " . (!$target->{disconnect_time} || $target->{connect_time} > $target->{disconnect_time} ? "Online for: " . DCBCommon::common_timestamp_duration($target->{connect_time}) : "Offline");
     }
     else {
       # Limited
