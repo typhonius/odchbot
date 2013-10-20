@@ -25,5 +25,7 @@ before_install:
   - cpanm XML::Simple
   - cpanm YAML::AppConfig
 install: true
-before_script: "perl ./odchbot.test"
+before_script:
+  - "perl ./odchbot.test"
+  - "cp odchbot.yml.example odchbot.yml"
 script: "perl ./odchbot.pl"
