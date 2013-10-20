@@ -151,7 +151,7 @@ sub user_check_errors($) {
   if (!$DCBSettings::config->{allow_external} && $user->{'ip'} !~ 127.0.0.1) {
     push(@errors, "External users are not currently accepted.");
   }
-  if (!$DCBSettings::config->{allow_passive} && $user->{'connection_type'} =~ /passive/) {
+  if (!$DCBSettings::config->{allow_passive} && $user->{'client'} =~ /M:P,H/) {
     push(@errors, "Passive users are not currently accepted.");
   }
   # If we're dealing with an op/op-admin then disregard all errors
