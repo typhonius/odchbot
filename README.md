@@ -38,11 +38,13 @@ The commands packaged with the bot require the following perl modules:
 
 - Date::Parse
 - Data::Dumper;
+- DCBUser
 - HTTP::Request::Common
 - HTML::Strip
 - HTML::Parser
 - HTML::Entities
 - IPC::System::Simple
+- JSON
 - List::Util
 - LWP::Simple
 - Mail::Sendmail
@@ -52,6 +54,7 @@ The commands packaged with the bot require the following perl modules:
 - Scalar::Util
 - String::Random
 - Sys::Hostname
+- WWW::TheMovieDB
 - XML::Simple
 
 Installing Perl Modules
