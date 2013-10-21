@@ -16,7 +16,12 @@ my $api = new WWW::TheMovieDB({
         'uri' => 'http://api.themoviedb.org'
 });
 
-sub grab_movie {
+sub main {
+  my $command = shift;
+  my $user = shift;
+  my $message = '';
+  my ($name, $title, $rtng, $desc, $year) = '';
+  
   while(1) {
     my $random_number = int(rand(10000));
     my $info = $api->Movies::info({'movie_id' => $random_number});
@@ -44,11 +49,14 @@ sub grab_movie {
       return ($name,$rtng,$desc,$year);
 	  }
       
-    }
+    
 
  
 
-  @return = (
+    my @return = ();
+	
+	@return = (
+	  
     {
       param => "message",
       message => sprintf("Title=> %s\nYear=> %s\nRating=> %s\nDescription=> %s\n",$name,$year,$rtng,$desc),
@@ -59,7 +67,8 @@ sub grab_movie {
     },  
  );
  return @return;
-}
+
+ }
 
 1;
 
