@@ -19,7 +19,7 @@ my $api = new WWW::TheMovieDB({
 sub main {
   my $command = shift;
   my $user = shift;
-  my $message = 'No movie found try again though~ :3';
+  my ($message, $public) = ('', 'No movie found try again though~ :3');
   my $i = 0;
 
   do {{
@@ -40,8 +40,8 @@ sub main {
     }
     next unless ($foreign == 0);
 
-    $message = "I found you a movie!";
-    $message .= "\nTitle => " . $json->{'original_title'};
+    $public = "$user->{'name'} you should watch $json->{'original_title'}!";
+    $message = "\nTitle => " . $json->{'original_title'};
     $message .= "\nYear => " . substr($json->{'release_date'}, 0, 4);
     $message .= "\nGenres => ";
     my $genres = $json->{'genres'};
@@ -56,12 +56,18 @@ sub main {
   my @return = (
     {
       param => "message",
+      message => $public,
+      user => '',
+      touser => '',
+      type => 4,
+    },
+    {
+      param => "message",
       message => $message,
       user => $user->{name},
       touser => '',
       type => 2,
- 
-    },  
+    },
  );
  return @return;
 
