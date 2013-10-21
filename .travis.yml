@@ -13,6 +13,7 @@ before_install:
   - cpanm DBI
   - cpanm DBD::SQLite
   - cpanm Exporter
+  - cpanm JSON
   - cpanm IPC::System::Simple --force
   - cpanm Log::Log4perl
   - cpanm Mail::Sendmail
@@ -23,6 +24,7 @@ before_install:
   - cpanm Storable
   - cpanm Switch --force
   - cpanm Text::Tabs
+  - cpanm WWW::TheMovieDB
   - cpanm XML::Simple
   - cpanm YAML::AppConfig
 install: true
