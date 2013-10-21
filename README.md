@@ -190,12 +190,12 @@ The 'type' element is used to define what kind of message should be sent:
 
 1. Message from the hub in main chat that everybody sees (Similar to the MOTD)
 2. Message from the bot in main chat that only the recipient sees
-3. PM from the bot to a user in a seperate PM window
+3. PM from the bot to a user in a separate PM window
 4. Message from the bot in main chat that everybody sees (Most common)
 5. PM from the bot to all users. (Mass message)
 6. PM from 'fromuser' to 'user' (spoofed)
 7. Message from the bot to all logged in Operators
-8. PM from the hub to 'user' in a seperate PM window
+8. PM from the hub to 'user' in a separate PM window
 9. PM from 'fromuser' to 'user' that will only show to 'user' (spoofed)
 10. Message from 'user' to mainchat (spoofed)
 11. Raw data to 'user'
