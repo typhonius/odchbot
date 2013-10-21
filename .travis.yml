@@ -10,7 +10,6 @@ before_install:
   - cpanm DateTime
   - cpanm DateTime::Duration
   - cpanm DateTime::Format::Duration
-  - cpanm DCBUser
   - cpanm DBI
   - cpanm DBD::SQLite
   - cpanm Exporter

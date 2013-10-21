@@ -38,7 +38,6 @@ The commands packaged with the bot require the following perl modules:
 
 - Date::Parse
 - Data::Dumper;
-- DCBUser
 - HTTP::Request::Common
 - HTML::Strip
 - HTML::Parser
