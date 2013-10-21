@@ -10,9 +10,11 @@ before_install:
   - cpanm DateTime
   - cpanm DateTime::Duration
   - cpanm DateTime::Format::Duration
+  - cpanm DCBUser
   - cpanm DBI
   - cpanm DBD::SQLite
   - cpanm Exporter
+  - cpanm JSON
   - cpanm IPC::System::Simple --force
   - cpanm Log::Log4perl
   - cpanm Mail::Sendmail
@@ -23,6 +25,7 @@ before_install:
   - cpanm Storable
   - cpanm Switch --force
   - cpanm Text::Tabs
+  - cpanm WWW::TheMovieDB
   - cpanm XML::Simple
   - cpanm YAML::AppConfig
 install: true
