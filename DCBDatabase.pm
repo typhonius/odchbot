@@ -16,7 +16,6 @@ use Module::Load;
 use FindBin;
 use lib "$FindBin::Bin";
 use DCBSettings;
-
 use DCBUser;
 
 sub new { return bless {}, shift }
@@ -236,7 +235,7 @@ sub db_install {
   my %anonymous = ( 'name' => $DCBSettings::config->{username_anonymous} );
   db_insert( 'users', \%anonymous );
 
-  my %bot = ( 'name' => $DCBSettings::config->{botname} );
+  my %bot = ( 'name' => $DCBSettings::config->{botname}, 'permission' => 64 );
   db_insert( 'users', \%bot );
 }
 
