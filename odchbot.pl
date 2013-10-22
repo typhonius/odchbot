@@ -287,29 +287,29 @@ sub odch_sendmessage {
     my $botname = $DCBSettings::config->{botname};
 
     switch ($type) {
-      case {MESSAGE->{'HUB_PUBLIC'}} { odch::data_to_all($message."|"); }
-      case {MESSAGE->{'PUBLIC_SOLO'}} { odch::data_to_user($user, "<$botname> $message|"); }
-      case {MESSAGE->{'BOT_PM'}} { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
-      case {MESSAGE->{'PUBLIC_ALL'}} {
+      case (MESSAGE->{'HUB_PUBLIC'}) { odch::data_to_all($message."|"); }
+      case (MESSAGE->{'PUBLIC_SINGLE'}) { odch::data_to_user($user, "<$botname> $message|"); }
+      case (MESSAGE->{'BOT_PM'}) { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
+      case (MESSAGE->{'PUBLIC_ALL'}) {
         odch::data_to_all("<$botname> $message|");
         my $bot = ();
         $bot->{uid} = 2;
         odch_hooks('line', $bot, $message);
       }
-      case {MESSAGE->{'MASS_MESSAGE'}} { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
-      case {MESSAGE->{'SPOOF_PM_BOTH'}} {
+      case (MESSAGE->{'MASS_MESSAGE'}) { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
+      case (MESSAGE->{'SPOOF_PM_BOTH'}) {
         odch::data_to_user($user,"\$To: $user From: $fromuser \$$message|");
         odch::data_to_user($fromuser,"\$To: $fromuser From: $user \$$message|");
       }
-      case {MESSAGE->{'SEND_TO_OPS'}} { odch_sendtoops($botname, "$message|"); }
-      case {MESSAGE->{'HUB_PM'}} { odch::data_to_user($user,"\$To: $user From: $botname \$$message|"); }
-      case {MESSAGE->{'SPOOF_PM_SINGLE'}} { odch::data_to_user($user,"\$To: $user From: $fromuser \$<$fromuser> $message|"); }
-      case {MESSAGE->{'SPOOF_PUBLIC'}} {
+      case (MESSAGE->{'SEND_TO_OPS'}) { odch_sendtoops($botname, "$message|"); }
+      case (MESSAGE->{'HUB_PM'}) { odch::data_to_user($user,"\$To: $user From: $botname \$$message|"); }
+      case (MESSAGE->{'SPOOF_PM_SINGLE'}) { odch::data_to_user($user,"\$To: $user From: $fromuser \$<$fromuser> $message|"); }
+      case (MESSAGE->{'SPOOF_PUBLIC'}) {
         odch::data_to_all("<$user> $message|");
         #$DCBUser::userlist->{$name} name could be fake so put 0 here if need to
       }
-      case {MESSAGE->{'RAW'}} { odch::data_to_user($user, $message."|"); }
-      case {MESSAGE->{'SEND_TO_ADMINS'}} { odch_sendtoadmins($botname, "$message|"); }
+      case (MESSAGE->{'RAW'}) { odch::data_to_user($user, $message."|"); }
+      case (MESSAGE->{'SEND_TO_ADMINS'}) { odch_sendtoadmins($botname, "$message|"); }
       else { odch::data_to_all("<$botname> INCORRECT TYPE ERROR|"); }
      }
   }
