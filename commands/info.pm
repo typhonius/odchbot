@@ -23,10 +23,10 @@ sub main {
   my $target = exists($DCBUser::userlist->{$info_user}) ? $DCBUser::userlist->{$info_user} : '';
 
   if ($target) {
-    if ($info_user =~ $user->{'name'} || user_access($user, DCBUser::PERMISSIONS->{ADMINISTRATOR})
-      || user_access($user, DCBUser::PERMISSIONS->{OPERATOR})) {
+    if ($info_user =~ $user->{'name'} || user_access($user, PERMISSIONS->{ADMINISTRATOR})
+      || user_access($user, PERMISSIONS->{OPERATOR})) {
 
-      my $permissions = DCBUser::PERMISSIONS;
+      my $permissions = PERMISSIONS;
       my %perm = %{$permissions};
       my $perm = 'UNKNOWN';
       foreach my $val (keys %perm) {

@@ -28,7 +28,7 @@ sub main {
 
   my @output = ();
 
-  if ($chat && (user_access($user, DCBUser::PERMISSIONS->{ADMINISTRATOR}) || user_access($user, DCBUser::PERMISSIONS->{OPERATOR}))) {
+  if ($chat && (user_access($user, PERMISSIONS->{ADMINISTRATOR}) || user_access($user, PERMISSIONS->{OPERATOR}))) {
     DCBSettings::config_set('topic', $chat);
     push(@output, topic_return_topic());
   }

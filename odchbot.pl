@@ -116,19 +116,19 @@ sub attempted_connection() {
 
 sub op_admin_connected() {
   my ($user) = @_;
-  odch_login($user, DCBUser::PERMISSIONS->{ADMINISTRATOR});
+  odch_login($user, PERMISSIONS->{ADMINISTRATOR});
 }
 sub op_connected() {
   my ($user) = @_;
-  odch_login($user, DCBUser::PERMISSIONS->{OPERATOR});
+  odch_login($user, PERMISSIONS->{OPERATOR});
 }
 sub reg_user_connected() {
   my ($user) = @_;
-  odch_login($user, DCBUser::PERMISSIONS->{AUTHENTICATED});
+  odch_login($user, PERMISSIONS->{AUTHENTICATED});
 }
 sub new_user_connected() {
   my ($user) = @_;
-  odch_login($user, DCBUser::PERMISSIONS->{ANONYMOUS});
+  odch_login($user, PERMISSIONS->{ANONYMOUS});
 }
 
 sub odch_login() {
@@ -318,7 +318,7 @@ sub odch_sendmessage {
 sub odch_sendtoops() {
   my ($botname, $message) = @_;
   foreach (split(/\s+/, odch_get('user_list'))) {
-    if (user_access($DCBUser::userlist->{lc($_)}, ($DCBUser::PERMISSIONS->{ADMINISTRATOR} | $DCBUser::PERMISSIONS->{OPERATOR}))) {
+    if (user_access($DCBUser::userlist->{lc($_)}, (PERMISSIONS->{ADMINISTRATOR} | PERMISSIONS->{OPERATOR}))) {
       odch_sendmessage("$_", "", "8", "$message");
     }
   }
@@ -327,7 +327,7 @@ sub odch_sendtoops() {
 sub odch_sendtoadmins() {
   my ($botname, $message) = @_;
   foreach (split(/\s+/, odch_get('user_list'))) {
-    if (user_access($DCBUser::userlist->{lc($_)}, ($DCBUser::PERMISSIONS->{ADMINISTRATOR}))) {
+    if (user_access($DCBUser::userlist->{lc($_)}, (PERMISSIONS->{ADMINISTRATOR}))) {
       odch_sendmessage("$_", "", "8", "$message");
     }
   }

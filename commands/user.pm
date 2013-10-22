@@ -61,7 +61,7 @@ sub postlogin {
   }
 
   # Provide the user with additional welcome information
-  my $permissions = DCBUser::PERMISSIONS;
+  my $permissions = PERMISSIONS;
   my %perm = %{$permissions};
   my $perm = 'UNKNOWN';
   foreach my $val (keys %perm) {

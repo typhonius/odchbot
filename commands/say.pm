@@ -32,7 +32,7 @@ sub line {
   my $chat = shift;
   my @return = ();
 
-  if ($chat =~ /^!say\s(\w+)\s(.*)/ && user_access($user, DCBUser::PERMISSIONS->{ADMINISTRATOR})) {
+  if ($chat =~ /^!say\s(\w+)\s(.*)/ && user_access($user, PERMISSIONS->{'ADMINISTRATOR'})) {
     @return = (
       {
         param    => "message",
