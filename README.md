@@ -188,20 +188,23 @@ Use either 'message' or 'action' for the data to be sent to either `odch_sendmes
   - message allows for a variety of message types to be used to communicate with users.
   - action allows bot level actions to run such as kicking users or banning nicknames.
 
-The 'type' element is used to define what kind of message should be sent:
+The 'type' element is used to define what kind of message should be sent. Rather than using integer values for the returns, DCBCommon provides constants that may be used instead to provide a little more verbosity to those reading the code.
 
-1. Message from the hub in main chat that everybody sees (Similar to the MOTD)
-2. Message from the bot in main chat that only the recipient sees
-3. PM from the bot to a user in a separate PM window
-4. Message from the bot in main chat that everybody sees (Most common)
-5. PM from the bot to all users. (Mass message)
-6. PM from 'fromuser' to 'user' (spoofed)
-7. Message from the bot to all logged in Operators
-8. PM from the hub to 'user' in a separate PM window
-9. PM from 'fromuser' to 'user' that will only show to 'user' (spoofed)
-10. Message from 'user' to mainchat (spoofed)
-11. Raw data to 'user'
-12. Message from the bot to all logged in admins
+<table>
+<td>Type</td><td>Constant</td><td>Description</td>
+<tr><td>1</td><td>HUB_PUBLIC</td><td>Message from the hub in main chat that everybody sees (Similar to the MOTD)</td></tr>
+<tr><td>2</td><td>PUBLIC_SINGLE</td><td>Message from the bot in main chat that only the recipient sees</td></tr>
+<tr><td>3</td><td>BOT_PM</td><td>PM from the bot to a user in a separate PM window</td></tr>
+<tr><td>4</td><td>PUBLIC_ALL</td><td>Message from the bot in main chat that everybody sees (Most common)</td></tr>
+<tr><td>5</td><td>MASS_MESSAGE</td><td>PM from the bot to all users. (Mass message)</td></tr>
+<tr><td>6</td><td>SPOOF_PM_BOTH</td><td>PM from 'fromuser' to 'user' (spoofed)</td></tr>
+<tr><td>7</td><td>SEND_TO_OPS</td><td>Message from the bot to all logged in Operators</td></tr>
+<tr><td>8</td><td>HUB_PM</td><td>PM from the hub to 'user' in a separate PM window</td></tr>
+<tr><td>9</td><td>SPOOF_PM_SINGLE</td><td>PM from 'fromuser' to 'user' that will only show to 'user' (spoofed)</td></tr>
+<tr><td>10</td><td>SPOOF_PUBLIC</td><td>Message from 'user' to mainchat (spoofed)</td></tr>
+<tr><td>11</td><td>RAW</td><td>Raw data to 'user'</td></tr>
+<tr><td>12</td><td>SEND_TO_ADMINS</td><td>Message from the bot to all logged in admins</td></tr>
+</table>
 
 user and fromuser are related to the message type and may sometimes be omitted (in the case of chat to all users etc).
 
@@ -210,7 +213,7 @@ user and fromuser are related to the message type and may sometimes be omitted (
         {
           param    => "message",
           message  => "Welcome for the first time: $user->{name}",
-          type     => 4,
+          type     => MESSAGE->{'PUBLIC_ALL'},,
           user     => '',
           fromuser   => '',
         },

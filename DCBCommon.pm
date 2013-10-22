@@ -13,9 +13,25 @@ use Storable qw(freeze thaw dclone);
 use Module::Load;
 use Exporter;
 our @ISA= qw(Exporter);
-our @EXPORT = qw(registry_rebuild commands_run_command registry_add common_timestamp_time common_timestamp_duration common_format_size);
+our @EXPORT = qw(registry_rebuild commands_run_command registry_add common_timestamp_time common_timestamp_duration common_format_size MESSAGE);
 use FindBin;
 use lib "$FindBin::Bin";
+
+# For further information about these constants read the README.
+use constant MESSAGE => {
+  HUB_PUBLIC      => 1,
+  PUBLIC_SINGLE   => 2,
+  BOT_PM          => 3,
+  PUBLIC_ALL      => 4,
+  MASS_MESSAGE    => 5,
+  SPOOF_PM_BOTH   => 6,
+  SEND_TO_OPS     => 7,
+  HUB_PM          => 8,
+  SPOOF_PM_SINGLE => 9,
+  SPOOF_PUBLIC    => 10,
+  RAW             => 11,
+  SEND_TO_ADMINS  => 12,
+};
 
 sub new { return bless {}, shift }
 
