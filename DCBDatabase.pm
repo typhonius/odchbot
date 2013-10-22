@@ -77,9 +77,9 @@ sub db_connect {
 
 sub db_table_exists {
   my $table = shift;
-  my @tables = $DCBDatabase::dbh->tables;
 
-  if ( grep $_ =~ $table, @tables ) {
+  my $sth = $DCBDatabase::dbh->table_info('%', '%', $table, 'TABLE');
+  if ($sth->fetch) {
     return 1;
   }
   return 0;
