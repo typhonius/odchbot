@@ -1,0 +1,6 @@
+name: gag
+description: Gag a specified user, additionally sending them a gag message
+required: 0
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR
