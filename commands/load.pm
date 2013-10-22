@@ -47,7 +47,7 @@ sub main {
       param    => "log",
       action   => "load",
       arg      => $message,
-      user     => $user->{name},
+      user     => $user,
     },
   );
   return @return;
