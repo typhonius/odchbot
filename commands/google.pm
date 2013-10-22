@@ -3,9 +3,10 @@ package google;
 
 use strict;
 use warnings;
-use Switch;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use Switch;
+use DCBCommon;
 
 sub main{
   my $command = shift;
@@ -22,8 +23,8 @@ sub main{
   } else {
     $message = "http://www.google.com/search?q=";
     foreach (@args) {
-	  $message .= $_ . "+";
-	  }
+      $message .= $_ . "+";
+    }
   }
   
   
@@ -33,7 +34,7 @@ sub main{
       message  => $message,
       user     => '',
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

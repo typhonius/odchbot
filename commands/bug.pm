@@ -9,6 +9,7 @@ use Mail::Sendmail;
 use HTTP::Request;
 use LWP::UserAgent;
 use JSON qw( decode_json );
+use DCBCommon;
 
 sub schema {
   my %schema = (
@@ -76,7 +77,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

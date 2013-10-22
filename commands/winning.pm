@@ -7,6 +7,7 @@ use lib "$FindBin::Bin/..";
 use List::Util qw(min);
 use Scalar::Util qw(looks_like_number);
 use DCBSettings;
+use DCBCommon;
 use DCBDatabase;
 use DCBUser;
 
@@ -51,7 +52,7 @@ sub main {
       message  => $winners,
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
   return @return;

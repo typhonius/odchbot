@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 use DCBUser;
 use JSON;
 use WWW::TheMovieDB;
@@ -59,14 +60,14 @@ sub main {
       message => $public,
       user => '',
       touser => '',
-      type => 4,
+      type => MESSAGE->{'PUBLIC_ALL'},
     },
     {
       param => "message",
       message => $message,
       user => $user->{name},
       touser => '',
-      type => 2,
+      type => MESSAGE->{'PUBLIC_SINGLE'},
     },
  );
  return @return;

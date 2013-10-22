@@ -33,7 +33,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

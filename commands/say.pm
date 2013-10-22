@@ -5,6 +5,7 @@ use warnings;
 
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 use DCBUser;
 
 sub main {
@@ -19,7 +20,7 @@ sub main {
       message  => "Nice try $user->{name} - no using say here!",
       user     => '',
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;
@@ -38,14 +39,14 @@ sub line {
         message  => $2,
         user     => $1,
         fromuser => '',
-        type     => 10,
+        type     => MESSAGE->{'SPOOF_PUBLIC'},
       },
       {
         param    => "message",
         message  => "$user->{name} just used !say => $chat",
         user     => '',
         fromuser => '',
-        type     => 7,
+        type     => MESSAGE->{'SEND_TO_OPS'},
       }
     );
   }

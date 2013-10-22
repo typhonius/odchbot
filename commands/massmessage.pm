@@ -2,9 +2,9 @@ package massmessage;
 
 use strict;
 use warnings;
-
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -20,7 +20,7 @@ sub main {
     {
       param => "message",
       message => $message,
-      type => 5,
+      type => MESSAGE->{'MASS_MESSAGE'},
       user => '',
       touser => '',
     }

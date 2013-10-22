@@ -2,9 +2,10 @@ package coin;
 
 use strict;
 use warnings;
-use Switch;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use Switch;
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -37,7 +38,7 @@ sub main {
       message  => $message,
       user     => '',
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

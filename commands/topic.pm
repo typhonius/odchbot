@@ -2,11 +2,11 @@ package topic;
 
 use strict;
 use warnings;
+use FindBin;
+use lib "$FindBin::Bin/..";
 use DCBSettings;
 use DCBCommon;
 use DCBUser;
-use FindBin;
-use lib "$FindBin::Bin/..";
 
 sub init {
   return topic_return_topic();
@@ -32,7 +32,7 @@ sub main {
     DCBSettings::config_set('topic', $chat);
     push(@output, topic_return_topic());
   }
-  push(@output, topic_return_topic(4, $user));
+  push(@output, topic_return_topic(MESSAGE->{'PUBLIC_ALL'}, $user));
 
   return @output;
 }

@@ -5,6 +5,7 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use Scalar::Util qw(looks_like_number);
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -29,7 +30,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

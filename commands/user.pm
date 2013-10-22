@@ -2,7 +2,6 @@ package user;
 
 use strict;
 use warnings;
-
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
@@ -32,7 +31,7 @@ sub postlogin {
         message  => "Welcome to $hubname for the first time: $user->{name}",
         user     => '',
         fromuser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
     );
   }
@@ -43,7 +42,7 @@ sub postlogin {
         message  => "Welcome back to $hubname $user->{name}",
         user     => $user->{name},
         fromuser   => '',
-        type     => 2,
+        type     => MESSAGE->{'PUBLIC_SINGLE'},
       },
     );
   }
@@ -55,7 +54,7 @@ sub postlogin {
         message  => $DCBSettings::config->{user_op_login_notify_message} . " $user->{name}",
         user     => $user->{name},
         fromuser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
     );
     push(@return, @op_notify);
@@ -84,9 +83,10 @@ sub postlogin {
       message  => $welcome,
       user     => $user->{name},
       fromuser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
+  # TODO change the type here to be sent from the hub perhaps?
 
   push(@return, @login);
 

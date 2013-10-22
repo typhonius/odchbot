@@ -2,10 +2,11 @@ package alert;
 
 use strict;
 use warnings;
-use POSIX;
-use Scalar::Util qw(looks_like_number);
 use FindBin;
 use lib "$FindBin::Bin/..";
+use POSIX;
+use Scalar::Util qw(looks_like_number);
+use DCBCommon;
 
 sub schema {
   my %schema = (
@@ -49,7 +50,7 @@ sub main {
       message  => "$message",
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;
@@ -64,7 +65,7 @@ sub timer {
         message  => $DCBSettings::config->{alert_message},
         user     => '',
         touser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
     );
     DCBSettings::config_set('alert_last_sent', time());

@@ -7,6 +7,7 @@ use lib "$FindBin::Bin/..";
 use Switch;
 use YAML::AppConfig;
 use DCBSettings;
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -67,7 +68,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
       #sanitize => $sanitize,
     },
   );

@@ -3,7 +3,6 @@ package weather;
 use utf8;
 use strict;
 use warnings;
-
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
@@ -41,7 +40,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
   return @return;

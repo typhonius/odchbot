@@ -59,7 +59,7 @@ sub main {
             message  => 'Excessive bantime, use less digits.',
             user     => '',
             touser   => '',
-            type     => 4,
+            type     => MESSAGE->{'PUBLIC_ALL'},
           },
         );
         return @return;
@@ -88,21 +88,21 @@ sub main {
             message  => $botmessage,
             user     => $victim->{name},
             touser   => '',
-            type     => 8,
+            type     => MESSAGE->{'HUB_PM'},
           },
           {
             param    => "message",
             message  => $botmessage,
             user     => $victim->{name},
             touser   => '',
-            type     => 2,
+            type     => MESSAGE->{'PUBLIC_SINGLE'},
           },
           {
             param    => "message",
             message  => $botmessage,
             user     => $victim->{name},
             touser   => '',
-            type     => 4,
+            type     => MESSAGE->{'PUBLIC_ALL'},
           },
           {
             param    => "log",
@@ -159,7 +159,7 @@ sub main {
       message  => $botmessage,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;
@@ -192,14 +192,14 @@ sub prelogin {
               message  => $banline,
               user     => $user->{name},
               touser   => '',
-              type     => 8,
+              type     => MESSAGE->{'HUB_PM'},
             },
             {
               param    => "message",
               message  => $banline,
               user     => $user->{name},
               touser   => '',
-              type     => 2,
+              type     => MESSAGE->{'PUBLIC_SINGLE'},
             },
             {
               param    => "action",

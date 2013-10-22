@@ -1,10 +1,11 @@
-#Written by Wickfish May 2013 for Chaotic Neutral
 package kick;
+
   use strict;
   use warnings;
   use FindBin;
   use lib "$FindBin::Bin/..";
   use DCBSettings;
+  use DCBCommon;
   use DCBUser;
   
 sub main {
@@ -26,14 +27,14 @@ sub main {
           message  => $kickmessage,
           user     => $victim->{name},
           touser   => '',
-          type     => 8,
+          type     => MESSAGE->{'HUB_PM'},
         },
         {
           param    => "message",
           message  => $botmessage,
           user     => $victim->{name},
           touser   => '',
-          type     => 4,
+          type     => MESSAGE->{'PUBLIC_ALL'},
         },
         {
           param    => "action",
@@ -57,15 +58,15 @@ sub main {
     $botmessage = "User does not exist or is offline";
   }
  
-	@return = (
+  @return = (
     {
       param    => "message",
       message  => $botmessage,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
-	);
+  );
  
   return @return;
 }

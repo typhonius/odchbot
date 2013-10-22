@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -22,13 +23,13 @@ sub main {
         message  => $message,
         user     => $user->{name},
         touser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
-	  {
-	    param    => "action",
-	    user     => $user->{name},
-	    action   => 'kick',
-	  },
+      {
+        param    => "action",
+        user     => $user->{name},
+        action   => 'kick',
+      },
     );
   } else {
     $message = $user->{name} . " has not been kicked because they rolled a " . $random_number . ". CN: " . $website;
@@ -38,7 +39,7 @@ sub main {
         message  => $message,
         user     => $user->{name},
         touser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
     );
   }

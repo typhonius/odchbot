@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 use DCBDatabase;
 use DCBUser;
 
@@ -25,7 +26,7 @@ sub main {
         message  => $botmessage,
         user     => $victim->{name},
         touser   => '',
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
       {
         param    => "log",
@@ -62,7 +63,7 @@ sub main {
       message  => $botmessage,
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

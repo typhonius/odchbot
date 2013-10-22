@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -17,7 +18,7 @@ sub main {
       message  => "Placeholder for help command",
       user     => '',
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

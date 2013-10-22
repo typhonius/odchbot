@@ -4,8 +4,9 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use DCBSettings;
 use IPC::System::Simple qw(capture);
+use DCBSettings;
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -21,7 +22,7 @@ sub main {
       message  => "$output",
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;

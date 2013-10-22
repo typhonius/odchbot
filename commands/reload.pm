@@ -30,7 +30,7 @@ sub main {
         message  => "$params reloaded.",
         user     => "",
         touser   => "",
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
       {
         param    => "log",
@@ -47,7 +47,7 @@ sub main {
         message  => "Unable to reload module. Ensure module exists.",
         user     => "",
         touser   => "",
-        type     => 4,
+        type     => MESSAGE->{'PUBLIC_ALL'},
       },
     );
   }

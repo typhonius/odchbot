@@ -6,6 +6,7 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
+use DCBCommon;
 
 sub schema {
   my %schema = (
@@ -36,7 +37,7 @@ sub main {
         message => $message,
         user => '',
         touser => '',
-        type => 4,
+        type => MESSAGE->{'PUBLIC_ALL'},
       },
       {
         param => "action",
@@ -54,7 +55,7 @@ sub main {
         message => $message,
         user => '',
         touser => '',
-        type => 4,
+        type => MESSAGE->{'PUBLIC_ALL'},
       },
     );
   }

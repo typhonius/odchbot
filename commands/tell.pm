@@ -67,7 +67,7 @@ sub main {
       message  => "$message",
       user     => $user->{name},
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;
@@ -95,14 +95,14 @@ sub tell_handler {
         message  => "$tells",
         user     => $user->{name},
         touser   => '',
-        type     => 2,
+        type     => MESSAGE->{'PUBLIC_SINGLE'},
       },
       {
         param    => "message",
         message  => "$tells",
         user     => $user->{name},
         touser   => '',
-        type     => 3,
+        type     => MESSAGE->{'BOT_PM'},
       },
     );
     return @return;

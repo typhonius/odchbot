@@ -6,6 +6,7 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
+use DCBCommon;
 
 sub main {
   my $command = shift;
@@ -21,7 +22,7 @@ sub main {
     {
       param => "message",
       message => $message,
-      type => 2,
+      type => MESSAGE->{'PUBLIC_SINGLE'},
       user => $user->{name},
       touser => '',
     },

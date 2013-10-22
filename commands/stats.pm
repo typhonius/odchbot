@@ -6,8 +6,8 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use Clone qw(clone);
-use DCBDatabase;
 use DCBCommon;
+use DCBDatabase;
 
 sub schema {
   my %schema = (
@@ -69,7 +69,7 @@ sub main {
       message  => "$message",
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
   return @return;

@@ -4,9 +4,9 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use List::Util qw(first);
 use DCBCommon;
 use DCBUser;
-use List::Util qw(first);
 
 sub main {
   my $command = shift;

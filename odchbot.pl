@@ -287,10 +287,10 @@ sub odch_sendmessage {
     my $botname = $DCBSettings::config->{botname};
 
     switch ($type) {
-      case 1 { odch::data_to_all($message."|"); }
-      case 2 { odch::data_to_user($user, "<$botname> $message|"); }
-      case 3 { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
-      case 4 { 
+      case {MESSAGE->{'HUB_PUBLIC'}} { odch::data_to_all($message."|"); }
+      case {MESSAGE->{'PUBLIC_SOLO'}} { odch::data_to_user($user, "<$botname> $message|"); }
+      case {MESSAGE->{'BOT_PM'}} { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
+      case {MESSAGE->{'PUBLIC_ALL'}} {
         odch::data_to_all("<$botname> $message|");
         my $bot = ();
         $bot->{uid} = 2;

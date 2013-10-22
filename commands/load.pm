@@ -41,7 +41,7 @@ sub main {
       message  => $message,
       user     => '',
       touser   => '',
-      type     => 4,
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
     {
       param    => "log",

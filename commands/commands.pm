@@ -2,9 +2,9 @@ package commands;
 
 use strict;
 use warnings;
-use Storable qw(thaw);
 use FindBin;
 use lib "$FindBin::Bin/..";
+use Storable qw(thaw);
 use DCBCommon;
 use DCBSettings;
 use DCBUser;
@@ -55,7 +55,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
   return @return;
