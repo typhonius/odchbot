@@ -1,0 +1,12 @@
+name: watch
+description: Allows users to get notifications when certain users log in or out
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - postlogin
+ - logout
