@@ -26,13 +26,6 @@ sub main {
       touser   => '',
       type     => MESSAGE->{'PUBLIC_ALL'},
     },
-    {
-      param    => "message",
-      message  => "Private message",
-      user     => "mark",
-      touser   => $user->{name},
-      type     => 9,
-    },
   );
   return @return;
 }
