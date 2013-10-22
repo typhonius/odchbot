@@ -52,7 +52,12 @@ sub main {
     }
   }
   else {
-    $message = "User does not exist."
+    $message = "Currently watching the following users:\n";
+    my @watching = watch_get_watching($user);
+    foreach my $watched (@watching) {
+      my $w_user = user_load($watched);
+      $message .= $w_user->{'name'} . "\n";
+    }
   }
 
   @return = (
@@ -121,6 +126,18 @@ sub watch_get_watchers {
   my @return = ();
   while (my $watch = $watchh->fetchrow_hashref()) {
     push(@return, $watch->{uid});
+  }
+  return @return;
+}
+
+sub watch_get_watching {
+  my $user = shift;
+  my @fields = ('uid', 'watched_uid');
+  my %where = ('uid' => $user->{uid});
+  my $watchh = DCBDatabase::db_select('watch', \@fields, \%where);
+  my @return = ();
+  while (my $watch = $watchh->fetchrow_hashref()) {
+    push(@return, $watch->{watched_uid});
   }
   return @return;
 }
