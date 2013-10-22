@@ -26,10 +26,10 @@ sub main {
   my $message = '';
 
   if (length($search) < $DCBSettings::config->{search_min_length}) {
-    $message = "Don't kill me :''( search for a longer string."
+    $message = "Don't kill me :''( search for a longer string.";
   }
   else {
-    $message = "Chat history: \n";
+    $message = "Search results: \n";
     my @fields = ('time', 'uid', 'chat');
 
     # Ensure we do not search for what the bot puts back into chat
@@ -52,6 +52,7 @@ sub main {
     foreach (reverse @inverse_history) {
       $message .= $_;
     }
+    $message .= "Returned " . scalar(@inverse_history) . " results.";
   }
 
 
