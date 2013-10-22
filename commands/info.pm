@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBCommon;
 use DCBUser;
 use List::Util qw(first);
 
@@ -68,7 +69,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => 2,
+      type     => MESSAGE->{PUBLIC_SINGLE},
     },
   );
   return @return;

@@ -3,6 +3,7 @@ package topic;
 use strict;
 use warnings;
 use DCBSettings;
+use DCBCommon;
 use DCBUser;
 use FindBin;
 use lib "$FindBin::Bin/..";
@@ -39,9 +40,9 @@ sub main {
 sub topic_return_topic {
   my $type = shift;
   my $user = shift;
-  $type ||= 1;
+  $type ||= MESSAGE->{'HUB_PUBLIC'};
   my $topic = DCBSettings::config_get('topic');
-  my $message = ($type == 1 || $type == 11) ? "\$HubName $topic" : "Hub topic: $topic";
+  my $message = ($type == MESSAGE->{'HUB_PUBLIC'} || $type == MESSAGE->{'RAW'}) ? "\$HubName $topic" : "Hub topic: $topic";
 
   my @return = (
     {
@@ -58,8 +59,8 @@ sub topic_return_topic {
 sub postlogin {
   my $command = shift;
   my $user = shift;
-  my @return = topic_return_topic(11, $user);
-  push (@return, topic_return_topic(2, $user));
+  my @return = topic_return_topic(MESSAGE->{'RAW'}, $user);
+  push (@return, topic_return_topic(MESSAGE->{'PUBLIC_SINGLE'}, $user));
   return @return;
 }
 
