@@ -171,6 +171,9 @@ sub user_invalid_name($) {
   if (($name !~ /[\w-]+/) || ($name =~ /[\\\/]/)) {
     push(@errors, "Name contains illegal characters. Letters, numbers, underscores and hyphens only.");
   }
+  if (lc($name) eq lc($DCBSettings::config->{botname}) || lc($name) eq lc($DCBSettings::config->{username_anonymous})) {
+    push(@errors, "An illegal name has been chosen please use another.");
+  }
   return @errors;
 }
 
