@@ -1,0 +1,9 @@
+name: unwatch
+description: Removes users from the watchlist.
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
