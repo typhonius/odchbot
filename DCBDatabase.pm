@@ -232,7 +232,7 @@ sub db_install {
   );
   db_create_table(\%schema);
 
-  my %anonymous = ( 'name' => $DCBSettings::config->{username_anonymous} );
+  my %anonymous = ( 'name' => $DCBSettings::config->{username_anonymous}, 'uid' => 0 );
   db_insert( 'users', \%anonymous );
 
   my %bot = ( 'name' => $DCBSettings::config->{botname}, 'permission' => 64 );

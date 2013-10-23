@@ -293,7 +293,7 @@ sub odch_sendmessage {
       case (MESSAGE->{'PUBLIC_ALL'}) {
         odch::data_to_all("<$botname> $message|");
         my $bot = ();
-        $bot->{uid} = 2;
+        $bot->{uid} = 1 ;
         odch_hooks('line', $bot, $message);
       }
       case (MESSAGE->{'MASS_MESSAGE'}) { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
