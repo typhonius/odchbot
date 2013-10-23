@@ -36,7 +36,6 @@ sub main {
 
   my @return = ();
   my $message = '';
-  my $type = MESSAGE->{'PUBLIC_ALL'};
 
   if ($watched_user) {
     if (grep $_ eq $user->{'uid'}, watch_get_watchers($watched_user)) {
@@ -59,7 +58,6 @@ sub main {
       my $w_user = user_load($watched);
       $message .= $w_user->{'name'} . "\n";
     }
-    $type = MESSAGE->{'PUBLIC_SINGLE'};
   }
 
   @return = (
@@ -68,7 +66,7 @@ sub main {
       message  => "$message",
       user     => $user->{name},
       touser   => '',
-      type     => $type,
+      type     => MESSAGE->{'PUBLIC_SINGLE'},
     },
   );
   return @return;
