@@ -1,19 +1,28 @@
 package kick;
 
-  use strict;
-  use warnings;
-  use FindBin;
-  use lib "$FindBin::Bin/..";
-  use DCBSettings;
-  use DCBCommon;
-  use DCBUser;
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::Bin/..";
+use DCBSettings;
+use DCBCommon;
+use DCBUser;
   
+sub schema {
+  my %schema = (
+    config => {
+      kick_default => "Halt bro! You have been kicked http://i.imgur.com/QPt5n.jpg",
+    },
+  );
+  return \%schema;
+}
+
 sub main {
   my $command = shift;
   my $user = shift;
   my @chatarray = split(/\s+/, shift);
   my $victim = @chatarray ? $DCBUser::userlist->{lc(shift(@chatarray))} : '';
-  my $kickmessage = @chatarray ? join(' ', @chatarray) : DCBSettings::config_get('default_kick');
+  my $kickmessage = @chatarray ? join(' ', @chatarray) : DCBSettings::config_get('kick_default');
   my $botmessage = "$user->{'name'} is kicking $victim->{'name'} because $kickmessage";
   my @return = ();
 

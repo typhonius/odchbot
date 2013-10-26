@@ -30,6 +30,7 @@ sub schema {
     config => {
       ban_default_ban_time => 300,
       ban_default_ban_message => "You are banned",
+      ban_handler => 'bot',
     },
   );
   return \%schema;
