@@ -8,6 +8,15 @@ use lib "$FindBin::Bin/..";
 use DCBSettings;
 use DCBCommon;
 
+sub schema {
+  my %schema = (
+    config => {
+      website => 'http://example.com',
+    },
+  );
+  return \%schema;
+}
+
 sub main {
   my $command = shift;
   my $user = shift;
