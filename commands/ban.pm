@@ -70,10 +70,10 @@ sub main {
       }
     }
     else {
-      $bantime = DCBSettings::config_get('tban_default_ban_time');
+      $bantime = DCBSettings::config_get('ban_default_ban_time');
     }
     my $unbantime = DCBCommon::common_timestamp_time(time() + $bantime);
-    my $banmessage = @chatarray ? join(' ', @chatarray) : DCBSettings::config_get('tban_default_ban_message');
+    my $banmessage = @chatarray ? join(' ', @chatarray) : DCBSettings::config_get('ban_default_ban_message');
 
     # if we're not using the bot for a ban handler we have to assign make their name $user->{name}
     $victim->{name} = ($handler !~ 'bot') ? $victimname : $victim->{name};
