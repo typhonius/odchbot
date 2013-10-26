@@ -46,9 +46,11 @@ sub main {
       $message .= "\nFirst Share: " . DCBCommon::common_format_size($target->{join_share});
       $message .= "\nRecent Share: " . DCBCommon::common_format_size($target->{connect_share});
       $message .= "\nShare Difference: " . DCBCommon::common_format_size($target->{connect_share} - $target->{join_share});
+      $message .= "\nIP: " . ($target->{ip} =~ '127.0.0.1' ? "$target->{ip} (Internal/Stunnel)" : "$target->{ip} (External)");
       $message .= "\nPermission: " . $perm;
       $message .= "\nClient: " . $target->{client};
       $message .= "\nStatus: " . (!$target->{disconnect_time} || $target->{connect_time} > $target->{disconnect_time} ? "Online for: " . DCBCommon::common_timestamp_duration($target->{connect_time}) : "Offline");
+      $message .= "\nMember for: " . DCBCommon::common_timestamp_duration($target->{join_time});
     }
     else {
       # Limited
