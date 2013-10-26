@@ -7,7 +7,7 @@ config:
   allow_passive: 1
   ban_handler: bot
   botdescription: I am Dragon, hear me RAWR
-  botemail: dragon@locahost
+  botemail: dragon@localhost
   botname: Dragon
   botshare: 136571
   botspeed: LAN(T1)
