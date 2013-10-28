@@ -41,7 +41,7 @@ sub main {
       message  => $message,
       user     => $user->{name},
       touser   => '',
-      type     => MESSAGE->{'PUBLIC_SINGLE'},
+      type     => MESSAGE->{'PUBLIC_ALL'},
     },
   );
   return @return;
