@@ -6,3 +6,4 @@ permissions:
  - AUTHENTICATED
  - OPERATOR
  - ADMINISTRATOR
+
