@@ -20,8 +20,8 @@ config:
     port: ''
     username: ''
   debug: 0
-  hubname: Dragon IRC Chat
-  hubname_short: IRC_Chat
+  hubname: OpenDCHub ChatHub
+  hubname_short: ODCH
   maintainer_email: odchbot@gmail.com
   min_username: 3
   minshare: '5368709120'

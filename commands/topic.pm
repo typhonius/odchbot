@@ -42,7 +42,9 @@ sub topic_return_topic {
   my $user = shift;
   $type ||= MESSAGE->{'HUB_PUBLIC'};
   my $topic = DCBSettings::config_get('topic');
-  my $message = ($type == MESSAGE->{'HUB_PUBLIC'} || $type == MESSAGE->{'RAW'}) ? "\$HubName $topic" : "Hub topic: $topic";
+  # A lot of clients use the $first - $rest structure for topic so use the hubname.
+  my $hubname = DCBSettings::config_get('hubname_short');
+  my $message = ($type == MESSAGE->{'HUB_PUBLIC'} || $type == MESSAGE->{'RAW'}) ? "\$HubName $hubname $topic" : "Hub topic: $topic";
 
   my @return = (
     {
