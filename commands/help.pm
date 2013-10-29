@@ -21,7 +21,8 @@ sub main {
   $message .= "2. Make sure you are not connecting through a wireless connection or using a router.\n";
   $message .= "3. Refresh your IP address and restart the client.\n";
   $message .= "4. In your connection settings, make sure you are using \'Direct connection\'.\n";
-  $message .= "5. Restart your your client and try to connect again and check to see if the problem has been fixed.\n";
+  $message .= "5. Check your firewall settings to ensure it allows the DC client you're running through.\n";
+  $message .= "6. Restart your your client and try to connect again and check to see if the problem has been fixed.\n";
   $message .= "Detailed guides are for help with these steps are available on the website, " . $hub_href . "/\n";
   $message .= "If you are still having issues, please contact us through chat or email and make sure to include ANY messages ChaosBot is sending you, in full.\n";
  
