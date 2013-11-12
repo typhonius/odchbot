@@ -146,7 +146,7 @@ sub user_check_errors($) {
     push(@errors, @name_errors);
   }
   if ($DCBSettings::config->{minshare} > $user->{'connect_share'}) {
-    push(@errors, "Your share is currently under the minimum share.");
+    push(@errors, "Your share is currently under the minimum share. The minimum share is currently " . DCBCommon::common_format_size($DCBSettings::config->{minshare}));
   }
   if (!$DCBSettings::config->{allow_external} && $user->{'ip'} !~ 127.0.0.1) {
     push(@errors, "External users are not currently accepted.");
