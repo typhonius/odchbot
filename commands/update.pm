@@ -12,7 +12,9 @@ sub main {
   my $command = shift;
   my $user = shift;
   my $output = '';
-  $output = capture("cd $DCBSettings::cwd ; git pull origin $DCBSettings::config->{version} ; " . 'git log @{1}..  --oneline');
+  $output = capture("cd $DCBSettings::cwd ; git pull origin $DCBSettings::config->{version};");
+  # temporarily removing the git log from the output as first time clones will not be able to run it
+  #; " . 'git log @{1}..  --oneline');
   chomp($output);
   my @return = ();
 
