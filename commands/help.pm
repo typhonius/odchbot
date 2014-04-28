@@ -14,6 +14,7 @@ sub main {
   my $message = "";
   my $hub_name = DCBSettings::config_get('hubname');
   my $hub_href = DCBSettings::config_get('website');
+  my $bot_name = DCBSettings::config_get('botname');
  
   $message = "Welcome to " . $hub_name . " Displaying help and tips!\n";
   $message .= "If you are having connection issues, try the following steps in order:\n";
@@ -23,8 +24,8 @@ sub main {
   $message .= "4. In your connection settings, make sure you are using \'Direct connection\'.\n";
   $message .= "5. Check your firewall settings to ensure it allows the DC client you're running through.\n";
   $message .= "6. Restart your your client and try to connect again and check to see if the problem has been fixed.\n";
-  $message .= "Detailed guides are for help with these steps are available on the website, " . $hub_href . "/\n";
-  $message .= "If you are still having issues, please contact us through chat or email and make sure to include ANY messages ChaosBot is sending you, in full.\n";
+  $message .= "Detailed guides are for help with these steps are available on the website, " . $hub_href . "\n";
+  $message .= "If you are still having issues, please contact us through chat or email and make sure to include ANY messages " . $bot_name . " is sending you, in full.\n";
  
   @return = (
     {
