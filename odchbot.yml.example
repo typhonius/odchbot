@@ -11,6 +11,12 @@ config:
   bottag: RAWRDC++
   commandPath: commands
   cp: "-"
+  jabber:
+    username: 'dragon'
+    password: 'password'
+    server: 'example.com'
+    conference_server: 'conference.example.com'
+    port: 5222
   db: 
     database: odchbot.db
     driver: SQLite
