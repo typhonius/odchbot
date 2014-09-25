@@ -44,7 +44,7 @@ sub db_connect {
     $module->import();
   };
   if ($@) {
-    die "Required module $module missing! Unable to connect to database."
+    print "Required module $module missing! Unable to connect to database.\n";
   }
 
   switch ( $db->{driver} ) {
