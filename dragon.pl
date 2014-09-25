@@ -9,7 +9,7 @@ use Net::Jabber::Bot;
 use Data::Dumper;
 
 use DCBSettings;
-#use DCBDatabase;
+use DCBDatabase;
 #use DCBCommon;
 #use DCBUser;
 #use Data::Dumper;
@@ -17,6 +17,9 @@ use DCBSettings;
 eval {
   our $Settings = new DCBSettings;
   $Settings->config_init();
+
+  our $Database = new DCBDatabase;
+  $Database->db_init();
 };
 
 # Init log4perl based on command line options
@@ -75,8 +78,6 @@ sub background_checks {
 
 sub new_bot_message {
   my %bot_message_hash = @_;
-#  print Dumper(%bot_message_hash);
-  # Who to speak to if you need to.
   $bot_message_hash{'sender'} = $bot_message_hash{'from_full'};
   $bot_message_hash{'sender'} =~ s{^.+\/([^\/]+)$}{$1};
   if ($bot_message_hash{'sender'} !~ $DCBSettings::config->{botname}) {
