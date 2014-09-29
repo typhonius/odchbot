@@ -1,5 +1,5 @@
---- 
-config: 
+---
+config:
   allow_anon: 1
   allow_external: 1
   allow_passive: 1
@@ -17,7 +17,10 @@ config:
     server: 'example.com'
     conference_server: 'conference.example.com'
     port: 5222
-  db: 
+    forums:
+     - dragon
+     - example
+  db:
     database: odchbot.db
     driver: SQLite
     host: ''
