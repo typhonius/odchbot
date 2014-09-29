@@ -41,10 +41,16 @@ sub common_init {
 }
 
 sub commands_init {
-  use FindBin;
-  push (@INC, "$FindBin::Bin/$DCBSettings::config->{commandPath}");
-  registry_init();
-  return;
+  eval {
+    use FindBin;
+    push (@INC, "$FindBin::Bin/$DCBSettings::config->{commandPath}");
+    registry_init();
+    return;
+  };
+  if ($@) {
+    print "Unable to load FindBin or push commands to INC.";
+    die;
+  }
 }
 
 sub registry_init {
@@ -196,7 +202,13 @@ sub commands_run_command {
   if ($command->{status}) {
     # if it's already loaded, don't load it.
     if (!$INC{$commandname . '.pm'}) {
-      load $commandname;
+      eval {
+        load $commandname;
+      };
+      if ($@) {
+        print $@;
+        die;
+      }
     }
     if ($commandname->can($hook)) {
       return $commandname->$hook($user, $params);

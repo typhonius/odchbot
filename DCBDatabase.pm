@@ -45,6 +45,7 @@ sub db_connect {
   };
   if ($@) {
     print "Required module $module missing! Unable to connect to database.\n";
+    die;
   }
 
   switch ( $db->{driver} ) {
