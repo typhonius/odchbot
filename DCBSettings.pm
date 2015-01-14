@@ -56,7 +56,7 @@ sub config_reload {
   my $conf = $yaml->get('config');
   foreach my $key (keys %{$conf}) {
     # Definitely do not override the db.
-    if ($key ne 'db') {
+    if ($key ne 'db' && $key ne 'jabber') {
       if (!exists($DCBSettings::config->{$key}) || $DCBSettings::config->{$key} ne $conf->{$key}) {
         $DCBSettings::config->{$key} = $conf->{$key};
       }
