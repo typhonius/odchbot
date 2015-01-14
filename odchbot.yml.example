@@ -12,10 +12,12 @@ config:
   commandPath: commands
   cp: "-"
   jabber:
-    username: 'dragon'
+    username: dragon
     password: 'password'
-    server: 'example.com'
-    conference_server: 'conference.example.com'
+    server: im.example.com
+    domain: example.com
+    conference_server: conference.example.com
+    resource: sage
     port: 5222
     forums:
      - dragon
