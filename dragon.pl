@@ -213,7 +213,7 @@ sub new_bot_message {
     my $params = $2 ? $2 : '';
     if ($DCBCommon::registry->{commands}->{$command}) {
       if (user_access($DCBUser::userlist->{lc($user_email)}, $DCBCommon::registry->{commands}->{$command}->{permissions})) {
-        my @return = DCBCommon::commands_run_command($DCBCommon::registry->{commands}->{$command}, 'main', $DCBUser::userlist->{lc($name)}, $params);
+        my @return = DCBCommon::commands_run_command($DCBCommon::registry->{commands}->{$command}, 'main', $DCBUser::userlist->{lc($user_email)}, $params);
         jabber_respond($bot_hash, @return);
       }
     }
