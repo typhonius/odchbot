@@ -73,7 +73,7 @@ sub db_connect {
 #}
 #}
   our $dbh = DBI->connect( $dsn, $db->{username}, $db->{password} )
-    or die "Unable to connect to database: $DBI::errstr";
+    || die "Unable to connect to database: $DBI::errstr";
 }
 
 sub db_table_exists {
@@ -172,14 +172,14 @@ sub db_delete( $ % ) {
 sub db_do( $ ) {
   my $query = shift;
   return $DCBDatabase::dbh->do($query)
-    or die("Unable to complete query: $DBI::errstr");
+    || die("Unable to complete query: $DBI::errstr");
 }
 
 sub db_execute {
   my ( $stmt, @bind ) = @_;
   my $sth = $DCBDatabase::dbh->prepare($stmt)
-    or die "Couldn't prepare statement: " . $DCBDatabase::dbh->errstr;
-  $sth->execute(@bind) or die "Couldn't execute statement: " . $sth->errstr;
+    || die "Couldn't prepare statement: " . $DCBDatabase::dbh->errstr;
+  $sth->execute(@bind) || die "Couldn't execute statement: " . $sth->errstr;
   return $sth;
 }
 
