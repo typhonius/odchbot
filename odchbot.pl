@@ -159,7 +159,7 @@ sub odch_login() {
 
   # If prelogin returns something, a command has declared the user unfit to log in.
   my @prelogin = odch_hooks('prelogin', $user);
-  if (@prelogin) {
+  if (scalar(@prelogin) == 0) {
     return;
   }
 
