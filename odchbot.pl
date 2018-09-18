@@ -165,7 +165,7 @@ sub odch_login() {
 
   my $tag = "$DCBSettings::config->{bottag} V:$DCBSettings::config->{version},M:P,H:1/3/3,S:7";
   odch_sendmessage($user->{name}, "", 11, "\$MyINFO \$ALL $DCBSettings::config->{botname} " .
-    "$DCBSettings::config->{botdescription}<$tag>\$\$$DCBSettings::config->{botspeed}>" .
+    "$DCBSettings::config->{botdescription}<$tag>\$\$\$$DCBSettings::config->{botspeed}>" .
     "\$$DCBSettings::config->{botemail}\$$DCBSettings::config->{botshare}\$");
 
   # The user has been accepted so save their details to the db and welcome them.
