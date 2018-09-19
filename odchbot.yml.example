@@ -1,5 +1,5 @@
---- 
-config: 
+---
+config:
   allow_anon: 1
   allow_external: 1
   allow_passive: 1
@@ -11,7 +11,18 @@ config:
   bottag: RAWRDC++
   commandPath: commands
   cp: "-"
-  db: 
+  jabber:
+    username: dragon
+    password: 'password'
+    server: im.example.com
+    domain: example.com
+    conference_server: conference.example.com
+    resource: sage
+    port: 5222
+    forums:
+     - dragon
+     - example
+  db:
     database: odchbot.db
     driver: SQLite
     host: ''

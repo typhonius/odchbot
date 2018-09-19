@@ -44,7 +44,8 @@ sub db_connect {
     $module->import();
   };
   if ($@) {
-    die "Required module $module missing! Unable to connect to database."
+    print "Required module $module missing! Unable to connect to database.\n";
+    die;
   }
 
   switch ( $db->{driver} ) {
@@ -72,7 +73,7 @@ sub db_connect {
 #}
 #}
   our $dbh = DBI->connect( $dsn, $db->{username}, $db->{password} )
-    or die "Unable to connect to database: $DBI::errstr";
+    || die "Unable to connect to database: $DBI::errstr";
 }
 
 sub db_table_exists {
@@ -171,14 +172,14 @@ sub db_delete( $ % ) {
 sub db_do( $ ) {
   my $query = shift;
   return $DCBDatabase::dbh->do($query)
-    or die("Unable to complete query: $DBI::errstr");
+    || die("Unable to complete query: $DBI::errstr");
 }
 
 sub db_execute {
   my ( $stmt, @bind ) = @_;
   my $sth = $DCBDatabase::dbh->prepare($stmt)
-    or die "Couldn't prepare statement: " . $DCBDatabase::dbh->errstr;
-  $sth->execute(@bind) or die "Couldn't execute statement: " . $sth->errstr;
+    || die "Couldn't prepare statement: " . $DCBDatabase::dbh->errstr;
+  $sth->execute(@bind) || die "Couldn't execute statement: " . $sth->errstr;
   return $sth;
 }
 
@@ -193,7 +194,8 @@ sub db_install {
           primary_key   => 1,
           autoincrement => 1,
         },
-        name => { type => "VARCHAR(35)", },
+        mail => { type => "VARCHAR(128)", },
+        name => { type => "VARCHAR(128)", },
         join_time  => { type => "INT", },
         join_share  => { type => "INT", },
         connect_time => { type => "INT", },
@@ -232,10 +234,17 @@ sub db_install {
   );
   db_create_table(\%schema);
 
-  my %anonymous = ( 'name' => $DCBSettings::config->{username_anonymous}, 'uid' => 0 );
+  my %anonymous = (
+    'name' => $DCBSettings::config->{username_anonymous},
+    'uid' => 0
+  );
   db_insert( 'users', \%anonymous );
 
-  my %bot = ( 'name' => $DCBSettings::config->{botname}, 'permission' => 64 );
+  my %bot = (
+    'name' => $DCBSettings::config->{botname},
+    'mail' => $DCBSettings::config->{botemail},
+    'permission' => 64
+  );
   db_insert( 'users', \%bot );
 }
 

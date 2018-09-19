@@ -5,9 +5,11 @@ use warnings;
 use DCBSettings;
 use DCBDatabase;
 
+use Data::Dumper;
+
 use Exporter;
 our @ISA= qw(Exporter);
-our @EXPORT = qw(user_init user_load user_load_by_name user_check_errors user_access user_permissions user_permissions_inherit user_connect user_disconnect PERMISSIONS);
+our @EXPORT = qw(user_init user_load user_load_by_name user_load_by_mail user_update user_check_errors user_access user_permissions user_permissions_inherit user_connect user_disconnect PERMISSIONS);
 
 use constant PERMISSIONS => {
   OFFLINE        => 0,
@@ -34,6 +36,21 @@ sub user_init() {
   while (my $user = $userh->fetchrow_hashref()) {
     $userlist->{lc($user->{name})} = $user;
   }
+}
+
+# Whenever we're dealing with logins or logouts we need the user data from the database.
+sub user_load_by_mail($) {
+  my $mail = shift;
+  my %where = ('mail' => { -like => [$mail] });
+  my @fields = ('*');
+  my $userh = DCBDatabase::db_select('users', \@fields, \%where);
+
+  # Send back the row as a ref hash array.
+  # ie username is $user->{'name'}
+  my $user = $userh->fetchrow_hashref();
+  # If the user is new we must add their name to the returned hash
+  $user->{'mail'} = $user->{'mail'} ? $user->{'mail'} : $mail;
+  return $user;
 }
 
 # Whenever we're dealing with logins or logouts we need the user data from the database.
@@ -75,6 +92,7 @@ sub user_connect($) {
 
   if ($user->{new}) {
     $fields{'name'} = $user->{name},
+    $fields{'mail'} = $user->{mail},
     $fields{'join_time'} = $user->{join_time};
     $fields{'join_share'} = $user->{join_share};
     $fields{'disconnect_time'} = 0;
@@ -89,6 +107,14 @@ sub user_connect($) {
     my %where = ('uid' => $user->{uid});
     DCBDatabase::db_update('users', \%fields, \%where);
   }
+}
+
+sub user_update($ $) {
+  my $user = shift;
+  my $fields = shift;
+
+  my %where = ( 'uid' => $user->{'uid'} );
+  DCBDatabase::db_update('users', $fields, \%where);
 }
 
 sub user_disconnect($) {

@@ -306,6 +306,11 @@ Configuration may be created by entering in key/value elements underneath the co
 If a command is uninstalled, the database table and any configuration specified in the `schema{}` subroutine will be removed and all data lost. This is the major difference between disabling a command and uninstalling.
 Due to requirements of the bot, the `%schema` array must be returned by reference.
 
+Jabber
+------
+
+The jabber branch of this project can be used to run the bot on an XMPP/Jabber server. There are additional prerequisites of the Net::Jabber::Bot module with [this patch](https://github.com/toddr/perl-net-jabber-bot/pull/5) as well as the utf8 module.
+
 Debugging/Logging
 -----------------
 
