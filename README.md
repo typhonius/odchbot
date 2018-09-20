@@ -20,6 +20,8 @@ The core code requires the following perl modules:
 - DBI
 - Exporter
 - FindBin
+- Log::Dispatch::File
+- Log::Log4perl
 - Module::Load
 - Number::Bytes::Human
 - SQL::Abstract

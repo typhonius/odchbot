@@ -14,13 +14,16 @@ use Switch;
 use Text::Tabs;
 use FindBin;
 use lib "$FindBin::Bin";
-use Log::Log4perl qw(get_logger :levels);
+use Log::Log4perl qw(:levels);
 
 use DCBSettings;
 use DCBDatabase;
 use DCBCommon;
 use DCBUser;
-use Data::Dumper;
+
+# Enable the logger and load configuration.
+Log::Log4perl->init('odchbot.log4perl.conf');
+my $logger = Log::Log4perl->get_logger('ODCH Bot');
 
 our $odch_dispatch_table ||= {
   ip => \&odch::get_ip,
@@ -48,18 +51,17 @@ eval {
   my $user_list = exists &odch::data_to_all ? odch_get('user_list') : '';
   $User->user_init($user_list);
 
-  # We need to manually set the log location using $cwd - disable until we can do that
-  # Log::Log4perl->init($DCBSettings::cwd . "odchbot.log4perl.conf");
-
   odch_hooks('init');
 
   if ($DCBSettings::config->{debug}) {
-    use Data::Dumper;
+    $logger->level($DEBUG);
+    $logger->debug("Debug mode enabled.");
+    odch_sendmessage("","",4,"Debug mode enabled.");
   }
 };
 if ($@) {
   odch_sendmessage("","",4,"$@");
-  odch_debug("init","","$@");
+  $logger->error($@);
   die;
 }
 
@@ -69,7 +71,7 @@ sub main() {
   odch_sendmessage("","",1,"\$HubName $DCBSettings::config->{topic}");
   my $loadtime = tv_interval ( $start_time ) ;
   odch_sendmessage("","",4,"$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
-  odch_debug('init', '', "$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
+  $logger->debug("$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
 }
 
 sub data_arrival() {
@@ -232,7 +234,7 @@ sub odch_respond {
         odch_odch($_->{action}, $_->{user}, $_->{arg});
       }
       case "log" {
-        odch_debug($_->{action}, $_->{user}, $_->{arg});
+        $logger->debug("Action: $_->{action}, User: $_->{user}->{name}, Arg: $_->{arg}");
       }
     }
   }
@@ -330,20 +332,6 @@ sub odch_sendtoadmins() {
     if (user_access($DCBUser::userlist->{lc($_)}, (PERMISSIONS->{ADMINISTRATOR}))) {
       odch_sendmessage("$_", "", "8", "$message");
     }
-  }
-}
-
-# use carp / croak instead
-sub odch_debug {
-  my $action = shift;
-  my $user = shift;
-  my $debug = shift;
-  if ($DCBSettings::config->{debug}) {
-    my $debugstr = "[" . DCBCommon::common_timestamp_time(time()) . "] <$action> $debug";
-    if ($user ) {
-      $debugstr .= " User: $user->{name}";
-    }
-    print Dumper $debugstr;
   }
 }
 
