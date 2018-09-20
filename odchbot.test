@@ -5,6 +5,8 @@ use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 use Module::Load;
+use FindBin;
+use lib "$FindBin::Bin";
 
 my ( $file, $cwd ) = fileparse( abs_path(__FILE__) );
 my @files = glob($cwd . '*.pm');
