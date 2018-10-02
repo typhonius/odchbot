@@ -6,13 +6,15 @@ use Cwd 'abs_path';
 use File::Basename;
 use YAML::AppConfig;
 
-use constant CONFIGFILE => 'odchbot.yml';
+my $config_file = 'odchbot.yml';
 
 sub new { return bless {}, shift }
 
 sub config_init() {
+  my ($class, $config_name) = @_;
+
   my $yaml = config_load();
-  our $config   = $yaml->get('config');
+  our $config = $yaml->get('config');
 }
 
 sub config_load() {
@@ -20,7 +22,7 @@ sub config_load() {
 
   # Create a new YAML object and get the config settings from file
   # Nested variables may be used: $config->{variables}->{timezone}
-  return YAML::AppConfig->new( file => $cwd . CONFIGFILE );
+  return YAML::AppConfig->new( file => $cwd . $config_file );
 }
 
 sub config_set {
@@ -67,7 +69,7 @@ sub config_reload {
 
 sub config_save {
   my $yaml = shift;
-  if ($yaml->dump($DCBSettings::cwd . CONFIGFILE)) {
+  if ($yaml->dump($DCBSettings::cwd . $config_file)) {
     return 1;
   }
   return 0;

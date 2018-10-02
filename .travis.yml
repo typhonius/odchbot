@@ -31,4 +31,5 @@ install: true
 before_script:
   - "perl ./odchbot.test"
   - "cp odchbot.yml.example odchbot.yml"
-script: "perl ./odchbot.pl"
+  - "cp opchat.yml.example opchat.yml"
+script: "perl ./odchbot.pl && perl ./opchat.pl"

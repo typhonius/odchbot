@@ -37,7 +37,7 @@ our $odch_dispatch_table ||= {
 
 eval {
   our $Settings = new DCBSettings;
-  $Settings->config_init();
+  $Settings->config_init('odchbot.yml');
 
   our $Database = new DCBDatabase;
   $Database->db_init();
@@ -118,18 +118,22 @@ sub attempted_connection() {
 
 sub op_admin_connected() {
   my ($user) = @_;
+  $logger->debug("$user connected as admin");
   odch_login($user, PERMISSIONS->{ADMINISTRATOR});
 }
 sub op_connected() {
   my ($user) = @_;
+  $logger->debug("$user connected as op");
   odch_login($user, PERMISSIONS->{OPERATOR});
 }
 sub reg_user_connected() {
   my ($user) = @_;
+  $logger->debug("$user connected as registered user");
   odch_login($user, PERMISSIONS->{AUTHENTICATED});
 }
 sub new_user_connected() {
   my ($user) = @_;
+  $logger->debug("$user connected as new user");
   odch_login($user, PERMISSIONS->{ANONYMOUS});
 }
 
@@ -153,8 +157,9 @@ sub odch_login() {
   @errors = user_check_errors($user);
 
   if (@errors) {
-    # TODO put odch_respond here
-    odch_sendmessage($user->{name}, "", 2, join("\n", @errors));
+    my $error_string = join("\n", @errors);
+    $logger->debug("$error_string. Structure: ", { filter => \&Dumper, value  => $user });
+    odch_sendmessage($user->{name}, "", 2, $error_string);
     odch_odch('kick', $user->{name});
     return;
   }
@@ -162,6 +167,7 @@ sub odch_login() {
   # If prelogin returns something, a command has declared the user unfit to log in.
   my @prelogin = odch_hooks('prelogin', $user);
   if (scalar(@prelogin) == 0) {
+    $logger->debug("Prelogin error. Structure: ", { filter => \&Dumper, value  => $user });
     return;
   }
 
@@ -184,6 +190,7 @@ sub odch_login() {
 
 sub user_disconnected() {
   my ($name) = @_;
+  $logger->debug("$name disconnected.");
   my $user = $DCBUser::userlist->{lc($name)};
   $user->{disconnect_time} = time();
   user_disconnect($user);
@@ -234,7 +241,7 @@ sub odch_respond {
         odch_odch($_->{action}, $_->{user}, $_->{arg});
       }
       case "log" {
-        $logger->debug("Action: $_->{action}, User: $_->{user}->{name}, Arg: $_->{arg}");
+        $logger->debug("Structure: ", { filter => \&Dumper, value  => $_ });
       }
     }
   }
@@ -254,8 +261,8 @@ sub odch_odch {
   my($odch_func, $user, $arg) = @_;
   switch($odch_func) {
     case "kick" {
-      odch::kick_user($user); 
-    } 
+      odch::kick_user($user);
+    }
     case "nickban" {
       odch::add_nickban_entry("$user $arg");
       odch::kick_user($user);
@@ -276,6 +283,7 @@ sub odch_odch {
 }
 
 sub hub_timer() {
+  $logger->debug('Hub timer fired.');
   odch_hooks('timer');
   $DCBCommon::COMMON->{variables}->{hub_timer_last_run} = time();
 }

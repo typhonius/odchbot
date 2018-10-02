@@ -1,0 +1,12 @@
+---
+config:
+  botdescription: OPChat
+  botemail: opchat@localhost
+  botname: OPChat
+  botshare: 136571
+  botspeed: LAN(T1)
+  bottag: OPDC++
+  cp: "-"
+  debug: 0
+  topic: Welcome to OPChat
+  version: v1

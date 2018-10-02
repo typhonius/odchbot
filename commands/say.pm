@@ -43,7 +43,7 @@ sub line {
       },
       {
         param    => "message",
-        message  => "$user->{name} just used !say => $chat",
+        message  => "$user->{name} just used !say => <$user->{name}> $chat",
         user     => '',
         fromuser => '',
         type     => MESSAGE->{'SEND_TO_OPS'},

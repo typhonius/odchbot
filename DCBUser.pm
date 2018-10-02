@@ -9,7 +9,7 @@ use Data::Dumper;
 
 use Exporter;
 our @ISA= qw(Exporter);
-our @EXPORT = qw(user_init user_load user_load_by_name user_load_by_mail user_update user_check_errors user_access user_permissions user_permissions_inherit user_connect user_disconnect PERMISSIONS);
+our @EXPORT = qw(user_init user_load user_load_by_name user_load_by_mail user_update user_check_errors user_access user_permissions user_permissions_inherit user_connect user_disconnect user_is_admin PERMISSIONS);
 
 use constant PERMISSIONS => {
   OFFLINE        => 0,
