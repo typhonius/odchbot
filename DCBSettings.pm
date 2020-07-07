@@ -13,16 +13,17 @@ sub new { return bless {}, shift }
 sub config_init() {
   my ($class, $config_name) = @_;
 
-  my $yaml = config_load();
+  my $yaml = config_load($config_name);
   our $config = $yaml->get('config');
 }
 
 sub config_load() {
+  my $config = shift // $config_file;
   our ( $settings, $cwd, $suffix ) = fileparse( abs_path(__FILE__) );
 
   # Create a new YAML object and get the config settings from file
   # Nested variables may be used: $config->{variables}->{timezone}
-  return YAML::AppConfig->new( file => $cwd . $config_file );
+  return YAML::AppConfig->new( file => $cwd . $config );
 }
 
 sub config_set {
