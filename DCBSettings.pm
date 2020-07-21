@@ -17,7 +17,7 @@ sub config_init() {
   our $config = $yaml->get('config');
 }
 
-sub config_load() {
+sub config_load {
   my $config = shift // $config_file;
   our ( $settings, $cwd, $suffix ) = fileparse( abs_path(__FILE__) );
 
