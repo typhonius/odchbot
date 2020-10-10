@@ -166,7 +166,7 @@ sub odch_login() {
 
   # If prelogin returns something, a command has declared the user unfit to log in.
   my @prelogin = odch_hooks('prelogin', $user);
-  if (scalar(@prelogin) == 0) {
+  if (scalar(@prelogin) != 0) {
     $logger->debug("Prelogin error. Structure: ", { filter => \&Dumper, value  => $user });
     return;
   }
