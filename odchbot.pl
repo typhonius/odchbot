@@ -54,6 +54,7 @@ eval {
   odch_hooks('init');
 
   if ($DCBSettings::config->{debug}) {
+    use Data::Dumper;
     $logger->level($DEBUG);
     $logger->debug("Debug mode enabled.");
     odch_sendmessage("","",4,"Debug mode enabled.");
