@@ -45,6 +45,7 @@ jobs:
             WWW::TheMovieDB \
             XML::Simple \
             YAML \
+            YAML::AppConfig \
             YAML::Syck
 
       - name: Syntax check (load all modules)
