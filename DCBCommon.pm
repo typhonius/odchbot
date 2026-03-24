@@ -219,8 +219,7 @@ sub commands_run_command {
 
 sub common_escape_string {
   my $string = shift;
-  $string =~ s/$_/$_/ for qw(\\\ \| \\( \\) \[ \{ \$ \+ \? \. \* \/ \^);
-  return $string;
+  return quotemeta($string);
 }
 
 sub common_timestamp_time {
