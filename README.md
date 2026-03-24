@@ -321,3 +321,7 @@ TODO: create a log file and write to that
 Troubleshooting/Bugs
 --------------------
 Submit a bug report by using the -bug command or by contacting <odchbot@gmail.com>
+
+## Links
+
+[![Hypercommit](https://img.shields.io/badge/Hypercommit-DB2475)](https://hypercommit.com/odchbot)
