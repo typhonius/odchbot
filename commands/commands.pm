@@ -41,7 +41,7 @@ sub main {
   else {
     foreach my $commands (sort keys %{$DCBCommon::registry->{commands}}) {
       my $command = $DCBCommon::registry->{commands}->{$commands};
-      if ($commands =~ $DCBCommon::registry->{commands}->{$commands}->{name}) {
+      if ($commands eq $DCBCommon::registry->{commands}->{$commands}->{name}) {
         if (user_access($user, $command->{permissions})) {
           $message .= DCBCommon::common_escape_string("$DCBSettings::config->{cp}") . "$command->{name}: $command->{description}\n";
         }

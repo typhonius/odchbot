@@ -23,7 +23,7 @@ use DCBUser;
 Log::Log4perl->init('opchat.log4perl.conf');
 my $logger = Log::Log4perl->get_logger('OPChat');
 
-my $oplist = ();
+my $oplist = {};
 
 eval {
   our $Settings = new DCBSettings;

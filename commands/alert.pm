@@ -7,6 +7,7 @@ use lib "$FindBin::Bin/..";
 use POSIX;
 use Scalar::Util qw(looks_like_number);
 use DCBCommon;
+use DCBSettings;
 
 sub schema {
   my %schema = (

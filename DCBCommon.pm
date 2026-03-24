@@ -105,6 +105,13 @@ sub registry_remove {
 sub registry_rebuild {
   my $command = shift;
   $command ||= '*';
+
+  # Validate command name to prevent glob injection (allow only '*' for rebuild-all, or safe command names)
+  if ($command ne '*' && $command !~ /^[\w-]+$/) {
+    warn "Invalid command name: $command";
+    return;
+  }
+
   my %where = ();
 
   if ($command !~ /^\*$/) {
@@ -199,6 +206,12 @@ sub commands_run_command {
   my $params = shift;
   my $commandname = $command->{name};
 
+  # Validate command name to prevent arbitrary module loading
+  if ($commandname !~ /^[\w]+$/) {
+    warn "Invalid command name refused for loading: $commandname";
+    return;
+  }
+
   if ($command->{status}) {
     # if it's already loaded, don't load it.
     if (!$INC{$commandname . '.pm'}) {
@@ -219,8 +232,7 @@ sub commands_run_command {
 
 sub common_escape_string {
   my $string = shift;
-  $string =~ s/$_/$_/ for qw(\\\ \| \\( \\) \[ \{ \$ \+ \? \. \* \/ \^);
-  return $string;
+  return quotemeta($string);
 }
 
 sub common_timestamp_time {

@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use Switch;
 use DCBCommon;
 
 sub main{
