@@ -105,6 +105,13 @@ sub registry_remove {
 sub registry_rebuild {
   my $command = shift;
   $command ||= '*';
+
+  # Validate command name to prevent glob injection (allow only '*' for rebuild-all, or safe command names)
+  if ($command ne '*' && $command !~ /^[\w-]+$/) {
+    warn "Invalid command name: $command";
+    return;
+  }
+
   my %where = ();
 
   if ($command !~ /^\*$/) {
