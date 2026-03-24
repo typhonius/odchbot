@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [v3]
+  pull_request:
+    branches: [v3]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        perl-version: ['5.26', '5.30', '5.34']
+
+    name: Perl ${{ matrix.perl-version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
+
+      - name: Install CPAN dependencies
+        run: |
+          cpanm --notest \
+            Cwd \
+            DateTime \
+            DateTime::Duration \
+            DateTime::Format::Duration \
+            DBI \
+            DBD::SQLite \
+            Exporter \
+            JSON \
+            IPC::System::Simple \
+            Log::Log4perl \
+            Mail::Sendmail \
+            Module::Load \
+            Number::Bytes::Human \
+            SQL::Abstract \
+            SQL::Abstract::Limit \
+            Storable \
+            Text::Tabs \
+            WWW::TheMovieDB \
+            XML::Simple \
+            YAML \
+            YAML::Syck
+
+      - name: Syntax check (load all modules)
+        run: perl ./odchbot.test
+
+      - name: Copy example configs
+        run: |
+          cp odchbot.yml.example odchbot.yml
+          cp opchat.yml.example opchat.yml
+
+      - name: Boot test
+        run: perl ./odchbot.pl && perl ./opchat.pl
