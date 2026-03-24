@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
+use DCBSettings;
 use DCBCommon;
 use DCBDatabase;
 use DCBUser;
