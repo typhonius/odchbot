@@ -1,0 +1,10 @@
+name: uptime
+description: Show how long the bot has been running
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - init

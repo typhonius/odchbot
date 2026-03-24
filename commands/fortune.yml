@@ -1,0 +1,8 @@
+name: fortune
+description: Get a random fortune, fun fact, or piece of wisdom
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR

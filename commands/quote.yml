@@ -1,0 +1,10 @@
+name: quote
+description: Save and recall memorable hub quotes
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - quotes
