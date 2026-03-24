@@ -1,0 +1,11 @@
+name: trivia
+description: Interactive multiplayer trivia game with categories, scoring, streaks and leaderboards
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - line
+ - timer
