@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
 use DCBCommon;
+use DCBDatabase;
 use DCBUser;
 
 sub schema {

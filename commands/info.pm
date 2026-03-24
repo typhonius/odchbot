@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use List::Util qw(first);
 use DCBCommon;
+use DCBSettings;
 use DCBUser;
 
 sub main {
