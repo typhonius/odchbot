@@ -1,0 +1,13 @@
+name: poll
+description: Create and vote on hub-wide polls
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - vote
+hooks:
+ - line
+ - timer
