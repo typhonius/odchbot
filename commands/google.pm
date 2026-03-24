@@ -7,6 +7,7 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use Switch;
 use DCBCommon;
+use URI::Escape;
 
 sub main{
   my $command = shift;
@@ -21,10 +22,7 @@ sub main{
   if ($argNo > 10) {
     $message = "Too many search parameters. Try a something shorter. Or, you know, just open a web browser.";
   } else {
-    $message = "http://www.google.com/search?q=";
-    foreach (@args) {
-      $message .= $_ . "+";
-    }
+    $message = "http://www.google.com/search?q=" . join("+", map { uri_escape($_) } @args);
   }
   
   
