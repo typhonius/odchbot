@@ -50,7 +50,7 @@ sub main {
         'message' => $tell_message,
       );
       DCBDatabase::db_insert('tell', \%fields);
-      my $action = ($to_user->{connect_time} - $to_user->{disconnect_time} < 0) ? 'log on' : 'speak in chat';
+      my $action = (!$to_user->{disconnect_time} || $to_user->{connect_time} > $to_user->{disconnect_time}) ? 'speak in chat' : 'log on';
       $message = "Message from $user->{name} to $to_user->{name} saved and will be delivered next time they $action";
     }
     else {
