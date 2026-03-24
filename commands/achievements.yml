@@ -1,0 +1,16 @@
+name: achievements
+description: Unlock badges and track progress across hub activities
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - badges
+hooks:
+ - init
+ - line
+ - postlogin
+ - logout
+ - timer
