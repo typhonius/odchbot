@@ -54,7 +54,7 @@ sub main {
       $message = "Message from $user->{name} to $to_user->{name} saved and will be delivered next time they $action";
     }
     else {
-      $message = "$to_user_name is not a user - no message saved."
+      $message = "$to_user_name is not a user - no message saved.";
     }
   }
   else {
