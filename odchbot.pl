@@ -215,6 +215,7 @@ sub odch_hooks {
     }
     odch_respond(@return);
   }
+  return @return;
 }
 
 sub odch_alter {

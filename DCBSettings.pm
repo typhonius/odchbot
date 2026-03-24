@@ -21,9 +21,17 @@ sub config_load {
   my $config = shift // $config_file;
   our ( $settings, $cwd, $suffix ) = fileparse( abs_path(__FILE__) );
 
+  # Check file permissions - warn if config is readable by group/others
+  my $config_path = $cwd . $config;
+  my $mode = (stat($config_path))[2];
+  if (defined $mode && ($mode & 044)) {
+    warn "WARNING: Config file $config_path is readable by group/others. "
+       . "Consider running: chmod 600 $config_path\n";
+  }
+
   # Create a new YAML object and get the config settings from file
   # Nested variables may be used: $config->{variables}->{timezone}
-  return YAML::AppConfig->new( file => $cwd . $config );
+  return YAML::AppConfig->new( file => $config_path );
 }
 
 sub config_set {

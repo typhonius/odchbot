@@ -51,7 +51,7 @@ sub main {
     my $bantime = @chatarray ? shift(@chatarray) : '';
     # The bot chokes when the bantime is too large so we need to
     # limit the length to ensure it isn't too big.
-    if ($bantime =~ /^\d+([s|m|h|d|w|y])?$/) {
+    if ($bantime =~ /^\d+([smhdwy])?$/) {
       if (length(scalar($bantime)) >= 5) {
         @return = (
           {
