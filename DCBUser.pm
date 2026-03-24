@@ -41,7 +41,7 @@ sub user_init() {
 # Whenever we're dealing with logins or logouts we need the user data from the database.
 sub user_load_by_mail($) {
   my $mail = shift;
-  my %where = ('mail' => { -like => [$mail] });
+  my %where = ('mail' => $mail);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
 
@@ -56,7 +56,7 @@ sub user_load_by_mail($) {
 # Whenever we're dealing with logins or logouts we need the user data from the database.
 sub user_load_by_name($) {
   my $name = shift;
-  my %where = ('name' => { -like => [$name] });
+  my %where = ('name' => $name);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
 
