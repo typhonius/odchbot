@@ -194,7 +194,7 @@ sub user_invalid_name($) {
   if (length($name) > $DCBSettings::config->{username_max_length}) {
     push(@errors, "Name length exceeds maximum of $DCBSettings::config->{username_max_length}");
   }
-  if (($name !~ /[\w-]+/) || ($name =~ /[\\\/]/)) {
+  if ($name !~ /^[\w-]+$/) {
     push(@errors, "Name contains illegal characters. Letters, numbers, underscores and hyphens only.");
   }
   if (lc($name) eq lc($DCBSettings::config->{botname}) || lc($name) eq lc($DCBSettings::config->{username_anonymous})) {
