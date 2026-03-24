@@ -23,11 +23,12 @@ sub main {
   my @chatarray = split(/\s+/, shift);
   my $victim = @chatarray ? $DCBUser::userlist->{lc(shift(@chatarray))} : '';
   my $kickmessage = @chatarray ? join(' ', @chatarray) : DCBSettings::config_get('kick_default');
-  my $botmessage = "$user->{'name'} is kicking $victim->{'name'} because $kickmessage";
+  my $botmessage = '';
   my @return = ();
 
   # Check that the victim is actually a user who is online
-  if ($victim && ($victim->{'connect_time'} > $victim->{'disconnect_time'})) {
+  if ($victim && (!$victim->{'disconnect_time'} || $victim->{'connect_time'} > $victim->{'disconnect_time'})) {
+    $botmessage = "$user->{'name'} is kicking $victim->{'name'} because $kickmessage";
     # If the user is lower permission than the victim, make the kick fail
     if ($user->{'permission'} >= $victim->{'permission'}) {
       @return = (
