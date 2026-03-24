@@ -1,0 +1,6 @@
+name: ungag
+description: Remove a gag from a specified user
+required: 0
+permissions:
+ - OPERATOR
+ - ADMINISTRATOR

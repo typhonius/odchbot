@@ -5,6 +5,7 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBCommon;
+use DCBSettings;
 
 sub main {
   my $command = shift;

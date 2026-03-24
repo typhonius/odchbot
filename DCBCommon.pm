@@ -9,7 +9,8 @@ use DateTime::Duration;
 use DateTime::Format::Duration;
 use Number::Bytes::Human;
 use YAML::AppConfig;
-use Storable qw(freeze thaw dclone);
+use Storable qw(dclone);
+use JSON qw(encode_json decode_json);
 use Module::Load;
 use Exporter;
 our @ISA= qw(Exporter);
@@ -71,14 +72,14 @@ sub registry_add {
   my $command = shift;
   $DCBCommon::registry->{commands}->{$command->{name}} = $command;
   if ($command->{alias}) {
-    my $aliases = thaw($command->{alias});
-    foreach (@$$aliases) {
+    my $aliases = decode_json($command->{alias});
+    foreach (@$aliases) {
       $DCBCommon::registry->{commands}->{$_} = dclone($command);
     }
   }
   if ($command->{hooks}) {
-    my $hooks = thaw($command->{hooks});
-    foreach (@$$hooks) {
+    my $hooks = decode_json($command->{hooks});
+    foreach (@$hooks) {
       $DCBCommon::registry->{hooks}->{$_}->{$command->{name}} = $command->{name};
     }
   }
@@ -88,14 +89,14 @@ sub registry_remove {
   my $command = shift;
   delete($DCBCommon::registry->{commands}->{$command->{name}});
   if ($command->{alias}) {
-    my $aliases = thaw($command->{alias});
-    foreach (@$$aliases) {
+    my $aliases = decode_json($command->{alias});
+    foreach (@$aliases) {
       delete($DCBCommon::registry->{commands}->{$_});
     }
   }
   if ($command->{hooks}) {
-    my $hooks = thaw($command->{hooks});
-    foreach (@$$hooks) {
+    my $hooks = decode_json($command->{hooks});
+    foreach (@$hooks) {
       delete($DCBCommon::registry->{hooks}->{$_}->{$command->{name}});
     }
   }
@@ -105,6 +106,13 @@ sub registry_remove {
 sub registry_rebuild {
   my $command = shift;
   $command ||= '*';
+
+  # Validate command name to prevent glob injection (allow only '*' for rebuild-all, or safe command names)
+  if ($command ne '*' && $command !~ /^[\w-]+$/) {
+    warn "Invalid command name: $command";
+    return;
+  }
+
   my %where = ();
 
   if ($command !~ /^\*$/) {
@@ -167,8 +175,8 @@ sub commands_load_commands {
         'status' => 1,
         'system' => $yaml->{config}->{system},
         'permissions' => DCBUser::user_permissions(@{ $yaml->{config}->{permissions} }),
-        'alias' => $yaml->{config}->{alias} ? freeze( \$yaml->{config}->{alias} ) : '',
-        'hooks' => $yaml->{config}->{hooks} ? freeze( \$yaml->{config}->{hooks} ) : '',
+        'alias' => $yaml->{config}->{alias} ? encode_json( $yaml->{config}->{alias} ) : '',
+        'hooks' => $yaml->{config}->{hooks} ? encode_json( $yaml->{config}->{hooks} ) : '',
       );
       DCBDatabase::db_insert('registry', \%fields);
       registry_add(\%fields);
@@ -199,6 +207,12 @@ sub commands_run_command {
   my $params = shift;
   my $commandname = $command->{name};
 
+  # Validate command name to prevent arbitrary module loading
+  if ($commandname !~ /^[\w]+$/) {
+    warn "Invalid command name refused for loading: $commandname";
+    return;
+  }
+
   if ($command->{status}) {
     # if it's already loaded, don't load it.
     if (!$INC{$commandname . '.pm'}) {
@@ -219,8 +233,7 @@ sub commands_run_command {
 
 sub common_escape_string {
   my $string = shift;
-  $string =~ s/$_/$_/ for qw(\\\ \| \\( \\) \[ \{ \$ \+ \? \. \* \/ \^);
-  return $string;
+  return quotemeta($string);
 }
 
 sub common_timestamp_time {

@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBSettings;
 use DCBCommon;
+use DCBDatabase;
 use DCBUser;
 
 sub schema {
@@ -32,9 +33,12 @@ sub main {
     $message = "Search results: \n";
     my @fields = ('time', 'uid', 'chat');
 
+    # Escape SQL wildcard characters in user input
+    (my $escaped_search = $search) =~ s/([%_\\])/\\$1/g;
+
     # Ensure we do not search for what the bot puts back into chat
     my %where = (
-      chat => { '-like', '%' . $search . '%' },
+      chat => { '-like', '%' . $escaped_search . '%' },
       uid => { '!=', 2 }
     );
     my $order = {-desc => 'hid'};

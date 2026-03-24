@@ -8,7 +8,7 @@ use Sys::Hostname;
 use Mail::Sendmail;
 use HTTP::Request;
 use LWP::UserAgent;
-use JSON qw( decode_json );
+use JSON qw( decode_json encode_json );
 use DCBCommon;
 
 sub schema {
@@ -40,7 +40,7 @@ sub main {
   if ($token) {
     my $ua = LWP::UserAgent->new;
     my $req = HTTP::Request->new(POST => $url);
-    my $post_data = '{ "title": "' . $chat . '", "body": "' . $chat . '" }';
+    my $post_data = encode_json({ title => $chat, body => $chat });
     $req->content($post_data);
     $req->header('Authorization' => "bearer " . $token);
     my $res = $ua->request($req);
