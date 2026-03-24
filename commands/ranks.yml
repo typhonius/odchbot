@@ -1,0 +1,19 @@
+name: ranks
+description: Gamification ranking system with XP, levels, titles, and leaderboards
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - rank
+ - level
+ - xp
+ - leaderboard
+hooks:
+ - init
+ - line
+ - postlogin
+ - logout
+ - timer

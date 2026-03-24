@@ -1,0 +1,13 @@
+name: duel
+description: Challenge another user to a dice duel for bragging rights and XP
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - challenge
+hooks:
+ - line
+ - timer

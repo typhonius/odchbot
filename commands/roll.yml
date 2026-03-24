@@ -1,0 +1,10 @@
+name: roll
+description: Roll dice in various formats like 2d6, d20, 3d8+5
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+alias:
+ - dice

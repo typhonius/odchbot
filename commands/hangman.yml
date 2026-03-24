@@ -1,0 +1,10 @@
+name: hangman
+description: Play hangman - guess the word letter by letter
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - line

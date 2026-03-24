@@ -1,0 +1,8 @@
+name: seen
+description: Check when a user was last seen online
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
