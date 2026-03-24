@@ -6,12 +6,12 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use Scalar::Util qw(looks_like_number);
 use DCBCommon;
+use DCBSettings;
 
 sub main {
   my $command = shift;
   my $user = shift;
-  my @chat = shift;
-  my $time = shift(@chat);
+  my $time = shift;
 
   my $message = '';
   my $timezone = DCBSettings::config_get('timezone');
