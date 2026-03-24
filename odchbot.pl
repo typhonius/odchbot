@@ -216,6 +216,7 @@ sub odch_hooks {
     }
     odch_respond(@return);
   }
+  return @return;
 }
 
 sub odch_alter {
@@ -234,6 +235,7 @@ sub odch_respond {
   my @return = @_;
 
   foreach (@return) {
+    next unless ref $_ eq 'HASH' && defined $_->{param};
     switch ($_->{param}) {
       case "message" {
         odch_sendmessage($_->{user}, $_->{fromuser}, $_->{type}, $_->{message});
