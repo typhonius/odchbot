@@ -39,17 +39,17 @@ sub main {
       }
     }
   }
-  my $winners = "List of longest logged in users:\n";
-  foreach my $key (sort {$winners{$a} cmp $winners{$b}} keys %winners){
+  my $message = "List of longest logged in users:\n";
+  foreach my $key (sort {$winners{$a} <=> $winners{$b}} keys %winners){
     if ($limit) {
-      $winners .= "$key: " . DCBCommon::common_timestamp_duration($winners{$key}) . "\n";
+      $message .= "$key: " . DCBCommon::common_timestamp_duration($winners{$key}) . "\n";
       $limit--;
     }
   }
   @return = (
     {
       param    => "message",
-      message  => $winners,
+      message  => $message,
       user     => $user->{name},
       touser   => '',
       type     => MESSAGE->{'PUBLIC_SINGLE'},
