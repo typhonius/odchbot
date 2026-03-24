@@ -1,7 +1,6 @@
 name: gag
-description: Gag a specified user, additionally sending them a gag message
+description: Gag a specified user, preventing them from chatting
 required: 0
 permissions:
  - OPERATOR
  - ADMINISTRATOR
-

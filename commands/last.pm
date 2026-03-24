@@ -28,7 +28,7 @@ sub main {
       $message = "Most recent line spoken by $first_user->{'name'}: \n[" . DCBCommon::common_timestamp_time($first->{time}) . "] <$first_user->{name}>: $first->{chat}\n";
     }
     if (!$message) {
-      $message = $first_user->{'name'} . " has never spoken; boring!"
+      $message = $first_user->{'name'} . " has never spoken; boring!";
     }
   }
   else {

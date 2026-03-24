@@ -41,7 +41,7 @@ sub user_init() {
 # Whenever we're dealing with logins or logouts we need the user data from the database.
 sub user_load_by_mail($) {
   my $mail = shift;
-  my %where = ('mail' => { -like => [$mail] });
+  my %where = ('mail' => $mail);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
 
@@ -56,7 +56,7 @@ sub user_load_by_mail($) {
 # Whenever we're dealing with logins or logouts we need the user data from the database.
 sub user_load_by_name($) {
   my $name = shift;
-  my %where = ('name' => { -like => [$name] });
+  my %where = ('name' => $name);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
 
@@ -174,7 +174,7 @@ sub user_check_errors($) {
   if ($DCBSettings::config->{minshare} > $user->{'connect_share'}) {
     push(@errors, "Your share is currently under the minimum share. The minimum share is currently " . DCBCommon::common_format_size($DCBSettings::config->{minshare}));
   }
-  if (!$DCBSettings::config->{allow_external} && $user->{'ip'} !~ 127.0.0.1) {
+  if (!$DCBSettings::config->{allow_external} && $user->{'ip'} !~ /^127\.0\.0\.1$/) {
     push(@errors, "External users are not currently accepted.");
   }
   if (!$DCBSettings::config->{allow_passive} && $user->{'client'} =~ /M:P,H/) {
@@ -194,7 +194,7 @@ sub user_invalid_name($) {
   if (length($name) > $DCBSettings::config->{username_max_length}) {
     push(@errors, "Name length exceeds maximum of $DCBSettings::config->{username_max_length}");
   }
-  if (($name !~ /[\w-]+/) || ($name =~ /[\\\/]/)) {
+  if ($name !~ /^[\w-]+$/) {
     push(@errors, "Name contains illegal characters. Letters, numbers, underscores and hyphens only.");
   }
   if (lc($name) eq lc($DCBSettings::config->{botname}) || lc($name) eq lc($DCBSettings::config->{username_anonymous})) {

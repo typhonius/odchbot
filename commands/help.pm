@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use FindBin;
 use DCBCommon;
+use DCBSettings;
 use lib "$FindBin::Bin/..";
  
 sub main {

@@ -15,7 +15,7 @@ sub main {
   my $status = @chatarray ? shift(@chatarray) : '';
   my $message = 'Could not set status';
 
-  if ($togglecommand && $DCBCommon::registry->{commands}->{$togglecommand} && ($status || $status =~ 0)) {
+  if ($togglecommand && $DCBCommon::registry->{commands}->{$togglecommand} && (defined($status) && length($status))) {
     $DCBCommon::registry->{commands}->{$togglecommand}->{status} = $status;
     my %fields = (
     'status' => $status,

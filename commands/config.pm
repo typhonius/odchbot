@@ -4,10 +4,12 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use Switch;
 use YAML::AppConfig;
 use DCBSettings;
 use DCBCommon;
+
+# Config keys that cannot be modified via chat commands
+my @PROTECTED_KEYS = qw(db jabber commandPath);
 
 sub main {
   my $command = shift;
@@ -32,13 +34,18 @@ sub main {
       }
     }
     elsif ($op =~ /^set$/) {
-      # TODO put in message confirmation here.
-      if (DCBSettings::config_set($variable, $value)) {
+      if (grep { $_ eq $variable } @PROTECTED_KEYS) {
+        $message = "Cannot modify protected config key: $variable";
+      }
+      elsif (DCBSettings::config_set($variable, $value)) {
         $message = "$variable set to $value";
       }
     }
     elsif ($op =~ /^delete$/) {
-      if (DCBSettings::config_delete($variable)) {
+      if (grep { $_ eq $variable } @PROTECTED_KEYS) {
+        $message = "Cannot delete protected config key: $variable";
+      }
+      elsif (DCBSettings::config_delete($variable)) {
         $message = "$variable deleted";
       }
     }
