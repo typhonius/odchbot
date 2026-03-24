@@ -199,6 +199,12 @@ sub commands_run_command {
   my $params = shift;
   my $commandname = $command->{name};
 
+  # Validate command name to prevent arbitrary module loading
+  if ($commandname !~ /^[\w]+$/) {
+    warn "Invalid command name refused for loading: $commandname";
+    return;
+  }
+
   if ($command->{status}) {
     # if it's already loaded, don't load it.
     if (!$INC{$commandname . '.pm'}) {
