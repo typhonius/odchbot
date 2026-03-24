@@ -2,7 +2,6 @@ package DCBDatabase;
 
 use strict;
 use warnings;
-use Switch;
 use YAML::AppConfig;
 use DBI;
 use SQL::Abstract;
@@ -48,17 +47,15 @@ sub db_connect {
     die;
   }
 
-  switch ( $db->{driver} ) {
-    case /^SQLite/ {
+  if ($db->{driver} =~ /^SQLite/) {
       $dsn .= $DCBSettings::cwd . $db->{path} . '/' . $db->{database};
     }
-    case /^[mysql|Pg]/ {
+    elsif ($db->{driver} =~ /^[mysql|Pg]/) {
       $dsn .= "database=$db->{database};host=$db->{host};port=$db->{port}";
     }
     else {
       $dsn .= "$db->{database}:$db->{host}:$db->port";
     }
-  }
 
 # We could also move the initial db connection into here our $dbh = db_connect(); and then if that returns false we can attempt an install_db()
 # That would probably be quicker than the dodgy grep @tables method. Although with sqlite if you try and connect it creates it for you...
@@ -104,14 +101,12 @@ sub db_create_table {
             $install .= " PRIMARY KEY";
           }
           if ($fields->{$key}->{autoincrement}) {
-             switch ($DCBSettings::config->{db}->{driver}) {
-               case /^SQLite/ {
+             if ($DCBSettings::config->{db}->{driver} =~ /^SQLite/) {
                 $install .= " AUTOINCREMENT";
                }
-               case /^[mysql|Pg]/ {
+               elsif ($DCBSettings::config->{db}->{driver} =~ /^[mysql|Pg]/) {
                  $install .= " AUTO_INCREMENT";
                }
-            }
           }
           $install .= ", "
         }

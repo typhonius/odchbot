@@ -10,7 +10,6 @@ use warnings;
 
 use Time::HiRes qw(gettimeofday tv_interval);
 my $start_time = [gettimeofday()];
-use Switch;
 use Text::Tabs;
 use FindBin;
 use lib "$FindBin::Bin";
@@ -234,17 +233,15 @@ sub odch_respond {
   my @return = @_;
 
   foreach (@return) {
-    switch ($_->{param}) {
-      case "message" {
+    if ($_->{param} eq "message") {
         odch_sendmessage($_->{user}, $_->{fromuser}, $_->{type}, $_->{message});
       }
-      case "action" {
+      elsif ($_->{param} eq "action") {
         odch_odch($_->{action}, $_->{user}, $_->{arg});
       }
-      case "log" {
+      elsif ($_->{param} eq "log") {
         $logger->debug("Structure: ", { filter => \&Dumper, value  => $_ });
       }
-    }
   }
 }
 
@@ -260,27 +257,25 @@ sub odch_get {
 
 sub odch_odch {
   my($odch_func, $user, $arg) = @_;
-  switch($odch_func) {
-    case "kick" {
+  if ($odch_func eq "kick") {
       odch::kick_user($user);
     }
-    case "nickban" {
+    elsif ($odch_func eq "nickban") {
       odch::add_nickban_entry("$user $arg");
       odch::kick_user($user);
     }
-    case "unnickban" {
+    elsif ($odch_func eq "unnickban") {
       odch::remove_nickban_entry($user);
     }
-    case "gag" {
+    elsif ($odch_func eq "gag") {
       odch::add_gag_entry("$user $arg");
     }
-    case "ungag" {
+    elsif ($odch_func eq "ungag") {
       odch::remove_gag_entry($user);
     }
-    # case "set" {
+    # elsif ($odch_func eq "set") {
     #   odch::set_variable($arg);
     # }
-  }
 }
 
 sub hub_timer() {
@@ -297,32 +292,30 @@ sub odch_sendmessage {
   if ($message && $type && exists &odch::data_to_all) {
     my $botname = $DCBSettings::config->{botname};
 
-    switch ($type) {
-      case (MESSAGE->{'HUB_PUBLIC'}) { odch::data_to_all($message."|"); }
-      case (MESSAGE->{'PUBLIC_SINGLE'}) { odch::data_to_user($user, "<$botname> $message|"); }
-      case (MESSAGE->{'BOT_PM'}) { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
-      case (MESSAGE->{'PUBLIC_ALL'}) {
+    if ($type == MESSAGE->{'HUB_PUBLIC'}) { odch::data_to_all($message."|"); }
+      elsif ($type == MESSAGE->{'PUBLIC_SINGLE'}) { odch::data_to_user($user, "<$botname> $message|"); }
+      elsif ($type == MESSAGE->{'BOT_PM'}) { odch::data_to_user($user, "\$To: $user From: $botname \$<$botname> $message|"); }
+      elsif ($type == MESSAGE->{'PUBLIC_ALL'}) {
         odch::data_to_all("<$botname> $message|");
         my $bot = ();
         $bot->{uid} = 1 ;
         odch_hooks('line', $bot, $message);
       }
-      case (MESSAGE->{'MASS_MESSAGE'}) { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
-      case (MESSAGE->{'SPOOF_PM_BOTH'}) {
+      elsif ($type == MESSAGE->{'MASS_MESSAGE'}) { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
+      elsif ($type == MESSAGE->{'SPOOF_PM_BOTH'}) {
         odch::data_to_user($user,"\$To: $user From: $fromuser \$$message|");
         odch::data_to_user($fromuser,"\$To: $fromuser From: $user \$$message|");
       }
-      case (MESSAGE->{'SEND_TO_OPS'}) { odch_sendtoops($botname, "$message|"); }
-      case (MESSAGE->{'HUB_PM'}) { odch::data_to_user($user,"\$To: $user From: $botname \$$message|"); }
-      case (MESSAGE->{'SPOOF_PM_SINGLE'}) { odch::data_to_user($user,"\$To: $user From: $fromuser \$<$fromuser> $message|"); }
-      case (MESSAGE->{'SPOOF_PUBLIC'}) {
+      elsif ($type == MESSAGE->{'SEND_TO_OPS'}) { odch_sendtoops($botname, "$message|"); }
+      elsif ($type == MESSAGE->{'HUB_PM'}) { odch::data_to_user($user,"\$To: $user From: $botname \$$message|"); }
+      elsif ($type == MESSAGE->{'SPOOF_PM_SINGLE'}) { odch::data_to_user($user,"\$To: $user From: $fromuser \$<$fromuser> $message|"); }
+      elsif ($type == MESSAGE->{'SPOOF_PUBLIC'}) {
         odch::data_to_all("<$user> $message|");
         #$DCBUser::userlist->{$name} name could be fake so put 0 here if need to
       }
-      case (MESSAGE->{'RAW'}) { odch::data_to_user($user, $message."|"); }
-      case (MESSAGE->{'SEND_TO_ADMINS'}) { odch_sendtoadmins($botname, "$message|"); }
+      elsif ($type == MESSAGE->{'RAW'}) { odch::data_to_user($user, $message."|"); }
+      elsif ($type == MESSAGE->{'SEND_TO_ADMINS'}) { odch_sendtoadmins($botname, "$message|"); }
       else { odch::data_to_all("<$botname> INCORRECT TYPE ERROR|"); }
-     }
   }
 }
 

@@ -8,7 +8,6 @@ use DCBSettings;
 use DCBCommon;
 use DCBUser;
 use DCBDatabase;
-use Switch;
 
 sub schema {
   my %schema = (
@@ -237,13 +236,11 @@ sub ban_calculate_ban_time {
   # and our custom ban implementation.
   my @bantime = split(/(\d+)(\w?)/, shift);
   my $time = $bantime[1];
-  switch ($bantime[2]) {
-    case 'm' { $time *= 60; }
-    case 'h' { $time *= (60 * 60); }
-    case 'd' { $time *= (60 * 60 * 24); }
-    case 'w' { $time *= (60 * 60 * 24 * 7); }
-    case 'y' { $time *= (60 * 60 * 24 * 365); }
-  }
+  if ($bantime[2] eq 'm') { $time *= 60; }
+  elsif ($bantime[2] eq 'h') { $time *= (60 * 60); }
+  elsif ($bantime[2] eq 'd') { $time *= (60 * 60 * 24); }
+  elsif ($bantime[2] eq 'w') { $time *= (60 * 60 * 24 * 7); }
+  elsif ($bantime[2] eq 'y') { $time *= (60 * 60 * 24 * 365); }
 
   return $time;
 }

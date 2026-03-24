@@ -5,7 +5,6 @@ use warnings;
 
 #use Log::Log4perl qw(:easy); # Also gives additional debug info back from bot.
 use Net::Jabber::Bot;
-use Switch;
 use Text::Tabs;
 use utf8;
 binmode(STDOUT, ":utf8");
@@ -224,17 +223,15 @@ sub jabber_respond {
   my ($bot_hash, @return) = @_;
 
   foreach (@return) {
-    switch ($_->{param}) {
-      case "message" {
+    if ($_->{param} eq "message") {
         jabber_sendmessage($bot_hash, $_->{user}, $_->{fromuser}, $_->{type}, $_->{message});
       }
-#      case =~ "action" {
+#      elsif ($_->{param} eq "action") {
 #        #odch_odch($_->{action}, $_->{user}, $_->{arg});
 #      }
-#      case =~ "log" {
+#      elsif ($_->{param} eq "log") {
 #        #odch_debug($_->{action}, $_->{user}, $_->{arg});
 #      }
-    }
   }
 }
 
@@ -253,34 +250,11 @@ sub jabber_sendmessage {
   # https://code.google.com/p/perl-net-jabber-bot/issues/detail?id=24
   my $jid = $DCBCommon::COMMON->{jidmap}->{$bot_hash->{sender}}->{jid};
   foreach (split(/\n/, $message)) {
-    switch ($type) {
-#      case (MESSAGE->{'HUB_PUBLIC'}) { odch::data_to_all($message."|"); }
-
-      case (MESSAGE->{'PUBLIC_SINGLE'}) { $bot->SendPersonalMessage($jid, $_); }
-      case (MESSAGE->{'BOT_PM'}) { $bot->SendPersonalMessage($jid, $_); }
-      case (MESSAGE->{'PUBLIC_ALL'}) {
+    if ($type == MESSAGE->{'PUBLIC_SINGLE'}) { $bot->SendPersonalMessage($jid, $_); }
+      elsif ($type == MESSAGE->{'BOT_PM'}) { $bot->SendPersonalMessage($jid, $_); }
+      elsif ($type == MESSAGE->{'PUBLIC_ALL'}) {
         $bot->SendGroupMessage($bot_hash->{reply_to}, $_);
-#        odch::data_to_all("<$botname> $message|");
-#        my $bot = ();
-#        $bot->{uid} = 1 ;
-#        odch_hooks('line', $bot, $message);
       }
-#      case (MESSAGE->{'MASS_MESSAGE'}) { odch::data_to_all("\$To: $user From: $botname \$<$botname> $message|"); }
-#      case (MESSAGE->{'SPOOF_PM_BOTH'}) {
-#        odch::data_to_user($user,"\$To: $user From: $fromuser \$$message|");
-#        odch::data_to_user($fromuser,"\$To: $fromuser From: $user \$$message|");
-#      }
-#      case (MESSAGE->{'SEND_TO_OPS'}) { odch_sendtoops($botname, "$message|"); }
-#      case (MESSAGE->{'HUB_PM'}) { odch::data_to_user($user,"\$To: $user From: $botname \$$message|"); }
-#      case (MESSAGE->{'SPOOF_PM_SINGLE'}) { odch::data_to_user($user,"\$To: $user From: $fromuser \$<$fromuser> $message|"); }
-#      case (MESSAGE->{'SPOOF_PUBLIC'}) {
-#        odch::data_to_all("<$user> $message|");
-        #$DCBUser::userlist->{$name} name could be fake so put 0 here if need to
-#      }
-#      case (MESSAGE->{'RAW'}) { odch::data_to_user($user, $message."|"); }
-#      case (MESSAGE->{'SEND_TO_ADMINS'}) { odch_sendtoadmins($botname, "$message|"); }
-#      else { odch::data_to_all("<$botname> INCORRECT TYPE ERROR|"); }
-    }
   }
 }
 
