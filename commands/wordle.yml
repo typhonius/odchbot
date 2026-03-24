@@ -1,0 +1,10 @@
+name: wordle
+description: Daily word guessing game - guess the 5-letter word in 6 tries
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+hooks:
+ - line

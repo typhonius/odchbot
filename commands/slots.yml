@@ -1,0 +1,8 @@
+name: slots
+description: Pull the slot machine lever and try your luck
+required: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
