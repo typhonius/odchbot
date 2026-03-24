@@ -79,7 +79,7 @@ sub timer {
   my $stats = clone ($DCBCommon::COMMON->{stats}->{hubstats});
   delete($stats->{sid});
   $stats->{time} = time();
-  db_insert('stats', $stats);
+  DCBDatabase::db_insert('stats', $stats);
   return;
 }
 
