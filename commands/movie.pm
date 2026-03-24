@@ -6,20 +6,44 @@ use warnings;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use DCBCommon;
+use DCBSettings;
 use DCBUser;
 use JSON;
 use WWW::TheMovieDB;
-my $api = new WWW::TheMovieDB({
-        'key' => 'c2c73ebd1e25cbc29cf61158c04ad78a',
-        'language' => 'en',
-        'version' => '3',
-        'type' => 'json',
-        'uri' => 'http://api.themoviedb.org'
-});
+
+sub schema {
+  my %schema = (
+    config => {
+      movie_api_key => '',
+    },
+  );
+  return \%schema;
+}
 
 sub main {
   my $command = shift;
   my $user = shift;
+
+  my $api_key = DCBSettings::config_get('movie_api_key');
+  unless ($api_key) {
+    my @return = ({
+      param => "message",
+      message => "Movie API key not configured. Set movie_api_key in config.",
+      user => $user->{name},
+      touser => '',
+      type => MESSAGE->{'PUBLIC_SINGLE'},
+    });
+    return @return;
+  }
+
+  my $api = WWW::TheMovieDB->new({
+    'key' => $api_key,
+    'language' => 'en',
+    'version' => '3',
+    'type' => 'json',
+    'uri' => 'http://api.themoviedb.org'
+  });
+
   my ($message, $public) = ('', 'No movie found try again though~ :3');
   my $i = 0;
 
