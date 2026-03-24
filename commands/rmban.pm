@@ -38,7 +38,7 @@ sub main {
     if (DCBSettings::config_get('ban_handler') =~ 'bot') {
       # We handle the unban in the bot rather than allow ODCH to handle
       my %where = ('uid' => $victim->{'uid'});
-      DCBDatabase::db_delete('ban', \%where)
+      DCBDatabase::db_delete('ban', \%where);
     }
     else {
       my @unnickban = (
