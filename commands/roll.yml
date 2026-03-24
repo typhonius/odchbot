@@ -1,0 +1,10 @@
+name: roll
+description: Roll dice in NdS format (e.g. 2d6, 1d20). Defaults to 1d6.
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+
