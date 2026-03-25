@@ -1,0 +1,10 @@
+name: seen
+description: Shows when a user was last seen online
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+

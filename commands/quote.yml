@@ -1,0 +1,10 @@
+name: quote
+description: Shows a random memorable line from chat history
+required: 0
+system: 0
+permissions:
+ - ANONYMOUS
+ - AUTHENTICATED
+ - OPERATOR
+ - ADMINISTRATOR
+
