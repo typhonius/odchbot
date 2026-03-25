@@ -1,0 +1,64 @@
+---
+# ODCHBot v4 Configuration
+# Copy to odchbot.yml and customize for your hub.
+
+config:
+  # --- Bot Identity ---
+  botname: Dragon
+  botdescription: I am Dragon, hear me RAWR
+  botemail: dragon@localhost
+  botshare: 136571
+  botspeed: LAN(T1)
+  bottag: RAWRDC++
+  version: v4
+
+  # --- Hub Settings ---
+  hubname: OpenDCHub ChatHub
+  hubname_short: ODCH
+  topic: Welcome to the hub!
+  cp: "-"
+  debug: 0
+  timezone: Australia/Canberra
+
+  # --- User Settings ---
+  allow_anon: 1
+  min_username: 3
+  username_max_length: 35
+  username_anonymous: Anonymous
+  no_perms: You do not have adequate permissions to use this function!
+
+  # --- User Welcome ---
+  user_op_login_notify: 1
+  user_op_login_notify_message: Welcome online
+
+  # --- Database ---
+  db:
+    database: odchbot.db
+    driver: SQLite
+    host: ''
+    password: ''
+    path: logs
+    port: ''
+    username: ''
+
+  # --- Web Links ---
+  web_rules: ''
+  web_karma: ''
+  website: ''
+
+  # --- Bug Reporting (GitHub API) ---
+  maintainer_email: ''
+  bug_github_url: https://api.github.com/repos
+  bug_github_user: ''
+  bug_github_repo: ''
+  bug_github_key: ''
+
+  # --- Movie Command (TheMovieDB) ---
+  movie_api_key: ''
+
+  # --- Weather Command ---
+  weather_feed: http://rss.weather.com.au/act/canberra
+  weather_cache_time: 3600
+
+  # --- Kick Defaults ---
+  kick_default: You have been kicked from the hub.
