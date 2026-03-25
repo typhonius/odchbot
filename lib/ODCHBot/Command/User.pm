@@ -13,6 +13,11 @@ sub meta_info {{
     required    => 1,
 }}
 
+sub config_defaults {{
+    user_op_login_notify         => 1,
+    user_op_login_notify_message => 'Welcome online',
+}}
+
 sub execute {
     my ($self, $ctx) = @_;
     $ctx->reply("User command handles login/logout events.");

@@ -10,6 +10,13 @@ sub meta_info {{
     permission  => ODCHBot::User::PERM_AUTHENTICATED,
 }}
 
+sub config_defaults {{
+    bug_github_url  => 'https://api.github.com/repos',
+    bug_github_user => '',
+    bug_github_repo => '',
+    bug_github_key  => '',
+}}
+
 sub execute {
     my ($self, $ctx) = @_;
     my $report = $ctx->args;

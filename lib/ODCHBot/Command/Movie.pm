@@ -10,6 +10,10 @@ sub meta_info {{
     permission  => ODCHBot::User::PERM_ANONYMOUS,
 }}
 
+sub config_defaults {{
+    movie_api_key => '',
+}}
+
 sub execute {
     my ($self, $ctx) = @_;
 

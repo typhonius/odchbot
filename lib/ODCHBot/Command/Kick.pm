@@ -10,6 +10,10 @@ sub meta_info {{
     permission  => ODCHBot::User::PERM_OPERATOR,
 }}
 
+sub config_defaults {{
+    kick_default => 'You have been kicked from the hub.',
+}}
+
 sub execute {
     my ($self, $ctx) = @_;
     my ($name, $reason) = $ctx->args =~ /^(\S+)(?:\s+(.+))?$/;

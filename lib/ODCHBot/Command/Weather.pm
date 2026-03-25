@@ -13,6 +13,12 @@ sub meta_info {{
     hooks       => ['timer'],
 }}
 
+sub config_defaults {{
+    weather_feed       => 'http://rss.weather.com.au/act/canberra',
+    weather_cache_time => 3600,
+    weather_last_called => 0,
+}}
+
 sub execute {
     my ($self, $ctx) = @_;
     my $cache_time = $self->config->get('weather_cache_time') // 3600;

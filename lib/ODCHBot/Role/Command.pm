@@ -19,9 +19,22 @@ sub required    { $_[0]->meta_info->{required}     // 0 }
 # Table definitions for auto-creation (override in command)
 sub tables { {} }
 
+# Config defaults for this command (override in command)
+# Returns a hashref of { key => default_value }
+# These are merged into config on registration if not already set.
+sub config_defaults { {} }
+
 # Called once during registration
 sub on_register {
     my ($self) = @_;
+
+    # Merge config defaults (don't overwrite existing values)
+    my $defaults = $self->config_defaults;
+    for my $key (keys %$defaults) {
+        unless (defined $self->config->get($key)) {
+            $self->config->set($key, $defaults->{$key});
+        }
+    }
 
     # Auto-create any tables this command needs
     my $tables = $self->tables;
