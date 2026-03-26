@@ -23,7 +23,7 @@ jobs:
           perl-version: ${{ matrix.perl-version }}
 
       - name: Install CPAN dependencies
-        run: cpanm --installdeps --notest .
+        run: cpanm --installdeps --notest --with-feature=commands .
 
       - name: Syntax check (load all modules)
         run: perl ./odchbot.test
