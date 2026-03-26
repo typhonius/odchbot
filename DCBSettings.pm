@@ -21,11 +21,11 @@ sub config_load {
   my $config = shift // $config_file;
   our ( $settings, $cwd, $suffix ) = fileparse( abs_path(__FILE__) );
 
-  # Check file permissions - warn if config is readable by group/others
+  # Check file permissions - warn if config is accessible by group/others
   my $config_path = $cwd . $config;
   my $mode = (stat($config_path))[2];
-  if (defined $mode && ($mode & 044)) {
-    warn "WARNING: Config file $config_path is readable by group/others. "
+  if (defined $mode && ($mode & 0077)) {
+    warn "WARNING: Config file $config_path has group/other permissions set. "
        . "Consider running: chmod 600 $config_path\n";
   }
 
