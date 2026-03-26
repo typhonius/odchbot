@@ -5,7 +5,6 @@ use warnings;
 use YAML::AppConfig;
 use DBI;
 use SQL::Abstract;
-use SQL::Abstract::Limit;
 
 use parent 'Exporter';
 our @EXPORT = qw( db_insert db_select db_update db_delete db_do );
@@ -142,8 +141,16 @@ sub db_select {
   my $order  = shift;
   my $limit  = shift;
   my $offset = shift;
-  my $sql = SQL::Abstract::Limit->new( limit_dialect => $DCBDatabase::dbh );
-  my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order, $limit, $offset );
+  my $sql = SQL::Abstract->new;
+  my ( $stmt, @bind ) = $sql->select( $table, $fields, $where, $order );
+  if (defined $limit) {
+    $stmt .= " LIMIT ?";
+    push @bind, $limit;
+    if (defined $offset) {
+      $stmt .= " OFFSET ?";
+      push @bind, $offset;
+    }
+  }
   return db_execute( $stmt, @bind );
 }
 
