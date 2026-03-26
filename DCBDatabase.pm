@@ -7,8 +7,7 @@ use DBI;
 use SQL::Abstract;
 use SQL::Abstract::Limit;
 
-use Exporter;
-our @ISA = qw( Exporter );
+use parent 'Exporter';
 our @EXPORT = qw( db_insert db_select db_update db_delete db_do );
 
 use Module::Load;
@@ -19,7 +18,7 @@ use DCBUser;
 
 sub new { return bless {}, shift }
 
-sub db_init() {
+sub db_init {
 
   # Check to see if the database has been set up.
   db_connect();
@@ -157,7 +156,7 @@ sub db_update {
   return db_execute( $stmt, @bind );
 }
 
-sub db_delete( $ % ) {
+sub db_delete {
   my $table = shift;
   my $where = shift;
   my $sql   = SQL::Abstract->new;

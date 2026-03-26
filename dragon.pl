@@ -16,17 +16,17 @@ use DCBUser;
 use Data::Dumper;
 
 eval {
-  our $Settings = new DCBSettings;
+  our $Settings = DCBSettings->new();
   $Settings->config_init();
 
-  our $Database = new DCBDatabase;
+  our $Database = DCBDatabase->new();
   $Database->db_init();
 
-  our $Common = new DCBCommon;
+  our $Common = DCBCommon->new();
   $Common->common_init();
   $Common->commands_init();
 
-  our $User = new DCBUser;
+  our $User = DCBUser->new();
   $User->user_init('');
 
   # odch_hooks('init');
