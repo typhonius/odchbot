@@ -39,7 +39,6 @@ jobs:
             Module::Load \
             Number::Bytes::Human \
             SQL::Abstract \
-            SQL::Abstract::Limit \
             Storable \
             Text::Tabs \
             WWW::TheMovieDB \
