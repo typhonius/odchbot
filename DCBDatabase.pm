@@ -50,11 +50,11 @@ sub db_connect {
   if ($db->{driver} =~ /^SQLite/) {
       $dsn .= $DCBSettings::cwd . $db->{path} . '/' . $db->{database};
     }
-    elsif ($db->{driver} =~ /^[mysql|Pg]/) {
+    elsif ($db->{driver} =~ /^(?:mysql|Pg)/) {
       $dsn .= "database=$db->{database};host=$db->{host};port=$db->{port}";
     }
     else {
-      $dsn .= "$db->{database}:$db->{host}:$db->port";
+      $dsn .= "$db->{database}:$db->{host}:$db->{port}";
     }
 
 # We could also move the initial db connection into here our $dbh = db_connect(); and then if that returns false we can attempt an install_db()
@@ -104,9 +104,10 @@ sub db_create_table {
              if ($DCBSettings::config->{db}->{driver} =~ /^SQLite/) {
                 $install .= " AUTOINCREMENT";
                }
-               elsif ($DCBSettings::config->{db}->{driver} =~ /^[mysql|Pg]/) {
+               elsif ($DCBSettings::config->{db}->{driver} =~ /^mysql/) {
                  $install .= " AUTO_INCREMENT";
                }
+               # Pg uses SERIAL type instead — handled by changing type to SERIAL
           }
           $install .= ", "
         }
