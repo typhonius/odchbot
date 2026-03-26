@@ -48,19 +48,19 @@ if ($@) {
   die;
 }
 
-sub main() {
+sub main {
   our $c = DCBCommon::common_escape_string("$DCBSettings::config->{cp}");
   odch::register_script_name($DCBSettings::config->{botname});
   my $loadtime = tv_interval ( $start_time ) ;
   $logger->debug("$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
 }
 
-sub data_arrival() {
+sub data_arrival {
   my ($name, $data) = @_;
   my $botname = $DCBSettings::config->{botname};
   $data =~ s/[\r\n]+/ /g;
   # matches PM
-  if ($data =~ /^\$To:\s$botname\sFrom:\s$name\s\$\<\Q$name\E\>\s(.*)\|/) {
+  if ($data =~ /^\$To:\s\Q$botname\E\sFrom:\s$name\s\$\<\Q$name\E\>\s(.*)\|/) {
     my $chat = $1;
     my $user = $oplist->{lc($name)};
     opchat_sendtoopchat($name, $chat);
@@ -80,7 +80,7 @@ sub data_arrival() {
       my $rejectee = shift(@chatarray);
       if ($oplist->{$rejectee}) {
         if (!user_is_admin($oplist->{$rejectee})) {
-          undef($oplist->{lc($rejectee)});
+          delete $oplist->{lc($rejectee)};
           $logger->debug("Removed $rejectee from oplist.");
           opchat_sendtoopchat($botname, "Removed $rejectee from chat!");
         }
@@ -108,33 +108,33 @@ sub data_arrival() {
   }
 }
 
-sub op_admin_connected() {
+sub op_admin_connected {
   my ($user) = @_;
   $logger->debug("$user connected as admin");
   opchat_login($user, PERMISSIONS->{ADMINISTRATOR});
 }
-sub op_connected() {
+sub op_connected {
   my ($user) = @_;
   $logger->debug("$user connected as op");
   opchat_login($user, PERMISSIONS->{OPERATOR});
 }
-sub reg_user_connected() {
+sub reg_user_connected {
   my ($user) = @_;
   $logger->debug("$user connected as registered user");
   opchat_login($user, PERMISSIONS->{AUTHENTICATED});
 }
-sub new_user_connected() {
+sub new_user_connected {
   my ($user) = @_;
   $logger->debug("$user connected as new user");
   opchat_login($user, PERMISSIONS->{ANONYMOUS});
 }
-sub user_disconnected() {
+sub user_disconnected {
   my ($name) = @_;
   $logger->debug("$name disconnected.");
-  undef($oplist->{lc($name)});
+  delete $oplist->{lc($name)};
 }
 
-sub opchat_login() {
+sub opchat_login {
   my ($name, $permission) = @_;
 
   my %user = (
@@ -153,7 +153,7 @@ sub opchat_login() {
   odch::data_to_user($name, $botmessage."|");
 }
 
-sub opchat_sendtoopchat() {
+sub opchat_sendtoopchat {
   my ($name, $message) = @_;
   $message =~ s/\r?\n/\r\n/g;
   $message =~ s/\|/&#124;/g;
