@@ -11,17 +11,6 @@ config:
   bottag: RAWRDC++
   commandPath: commands
   cp: "-"
-  jabber:
-    username: dragon
-    password: 'password'
-    server: im.example.com
-    domain: example.com
-    conference_server: conference.example.com
-    resource: sage
-    port: 5222
-    forums:
-     - dragon
-     - example
   db:
     database: odchbot.db
     driver: SQLite

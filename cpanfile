@@ -26,8 +26,3 @@ feature 'commands', 'Optional modules used by individual commands' => sub {
     requires 'WWW::TheMovieDB';
     requires 'XML::Simple';
 };
-
-# Jabber/XMPP bridge (dragon.pl)
-feature 'jabber', 'Net::Jabber::Bot for the XMPP bridge' => sub {
-    requires 'Net::Jabber::Bot';
-};
