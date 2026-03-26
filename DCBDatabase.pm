@@ -165,17 +165,28 @@ sub db_delete( $ % ) {
   return db_execute( $stmt, @bind );
 }
 
-sub db_do( $ ) {
+sub db_do {
   my $query = shift;
-  return $DCBDatabase::dbh->do($query)
-    || die("Unable to complete query: $DBI::errstr");
+  my $rv = eval { $DCBDatabase::dbh->do($query) };
+  if (!defined $rv) {
+    warn "Unable to complete query: " . ($DBI::errstr // $@);
+    return;
+  }
+  return $rv;
 }
 
 sub db_execute {
   my ( $stmt, @bind ) = @_;
-  my $sth = $DCBDatabase::dbh->prepare($stmt)
-    || die "Couldn't prepare statement: " . $DCBDatabase::dbh->errstr;
-  $sth->execute(@bind) || die "Couldn't execute statement: " . $sth->errstr;
+  my $sth = eval { $DCBDatabase::dbh->prepare($stmt) };
+  if (!$sth) {
+    warn "Couldn't prepare statement: " . ($DCBDatabase::dbh->errstr // $@);
+    return;
+  }
+  my $rv = eval { $sth->execute(@bind) };
+  if (!$rv) {
+    warn "Couldn't execute statement: " . ($sth->errstr // $@);
+    return;
+  }
   return $sth;
 }
 
