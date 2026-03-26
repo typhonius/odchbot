@@ -35,17 +35,17 @@ our $odch_dispatch_table ||= {
 };
 
 eval {
-  our $Settings = new DCBSettings;
+  our $Settings = DCBSettings->new();
   $Settings->config_init('odchbot.yml');
 
-  our $Database = new DCBDatabase;
+  our $Database = DCBDatabase->new();
   $Database->db_init();
 
-  our $Common = new DCBCommon;
+  our $Common = DCBCommon->new();
   $Common->common_init();
   $Common->commands_init();
 
-  our $User = new DCBUser;
+  our $User = DCBUser->new();
   # During testing this function should not try to call an odch function.
   my $user_list = exists &odch::data_to_all ? odch_get('user_list') : '';
   $User->user_init($user_list);

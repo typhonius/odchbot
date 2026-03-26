@@ -5,10 +5,7 @@ use warnings;
 use DCBSettings;
 use DCBDatabase;
 
-use Data::Dumper;
-
-use Exporter;
-our @ISA= qw(Exporter);
+use parent 'Exporter';
 our @EXPORT = qw(user_init user_load user_load_by_name user_load_by_mail user_update user_check_errors user_access user_permissions user_permissions_inherit user_connect user_disconnect user_is_admin PERMISSIONS);
 
 use constant PERMISSIONS => {
@@ -39,7 +36,7 @@ sub user_init() {
 }
 
 # Whenever we're dealing with logins or logouts we need the user data from the database.
-sub user_load_by_mail($) {
+sub user_load_by_mail {
   my $mail = shift;
   my %where = ('mail' => $mail);
   my @fields = ('*');
@@ -54,7 +51,7 @@ sub user_load_by_mail($) {
 }
 
 # Whenever we're dealing with logins or logouts we need the user data from the database.
-sub user_load_by_name($) {
+sub user_load_by_name {
   my $name = shift;
   my %where = ('name' => $name);
   my @fields = ('*');
@@ -68,7 +65,7 @@ sub user_load_by_name($) {
   return $user;
 }
 
-sub user_load($) {
+sub user_load {
   my $uid = shift;
   my %where = ('uid' => $uid);
   my @fields = ('*');
@@ -80,7 +77,7 @@ sub user_load($) {
   return $user;
 }
 
-sub user_connect($) {
+sub user_connect {
   my $user = shift;
   my %fields = (
     'ip' => $user->{ip},
@@ -109,7 +106,7 @@ sub user_connect($) {
   }
 }
 
-sub user_update($ $) {
+sub user_update {
   my $user = shift;
   my $fields = shift;
 
@@ -117,7 +114,7 @@ sub user_update($ $) {
   DCBDatabase::db_update('users', $fields, \%where);
 }
 
-sub user_disconnect($) {
+sub user_disconnect {
   my $user = shift;
   my %fields = (
     'disconnect_time' => $user->{disconnect_time},
@@ -133,7 +130,7 @@ sub user_sanitize_disconnects {
   DCBDatabase::db_update('users', \%fields, \%where);
 }
 
-sub user_permissions( @ ) {
+sub user_permissions {
   my (@permissions) = @_;
   my $return = 0;
 
@@ -159,7 +156,7 @@ sub user_access {
   return ($user->{permission} & $permission) ? 1 : 0;
 }
  
-sub user_check_errors($) {
+sub user_check_errors {
   my $user = shift;
   my @errors = ();
 
@@ -188,7 +185,7 @@ sub user_check_errors($) {
   return @errors;
 }
 
-sub user_invalid_name($) {
+sub user_invalid_name {
   my $name = shift;
   my @errors = ();
   if (length($name) > $DCBSettings::config->{username_max_length}) {

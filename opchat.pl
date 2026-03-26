@@ -26,7 +26,7 @@ my $logger = Log::Log4perl->get_logger('OPChat');
 my $oplist = {};
 
 eval {
-  our $Settings = new DCBSettings;
+  our $Settings = DCBSettings->new();
   $Settings->config_init('opchat.yml');
 
   if ($DCBSettings::config->{debug}) {
