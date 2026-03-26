@@ -23,29 +23,7 @@ jobs:
           perl-version: ${{ matrix.perl-version }}
 
       - name: Install CPAN dependencies
-        run: |
-          cpanm --notest \
-            Cwd \
-            DateTime \
-            DateTime::Duration \
-            DateTime::Format::Duration \
-            DBI \
-            DBD::SQLite \
-            Exporter \
-            JSON \
-            IPC::System::Simple \
-            Log::Log4perl \
-            Mail::Sendmail \
-            Module::Load \
-            Number::Bytes::Human \
-            SQL::Abstract \
-            Storable \
-            Text::Tabs \
-            WWW::TheMovieDB \
-            XML::Simple \
-            YAML \
-            YAML::AppConfig \
-            YAML::Syck
+        run: cpanm --installdeps --notest --with-feature=commands .
 
       - name: Syntax check (load all modules)
         run: perl ./odchbot.test
