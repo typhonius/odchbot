@@ -81,18 +81,40 @@ sub db_table_exists {
   return 0;
 }
 
+sub db_map_type {
+  my ($type, $field) = @_;
+  my $driver = $DCBSettings::config->{db}->{driver};
+
+  if ($driver =~ /^Pg/) {
+    # PostgreSQL uses SERIAL for auto-incrementing integer primary keys
+    if ($field->{autoincrement} && $type eq 'INTEGER') {
+      return 'SERIAL';
+    }
+    my %pg_types = (
+      'TINYINT'  => 'SMALLINT',
+      'BLOB'     => 'TEXT',
+    );
+    return $pg_types{$type} // $type;
+  }
+
+  return $type;
+}
+
 sub db_create_table {
   # TODO my $stmt_and_val = $sql->generate('create table', \$table, \@fields);
   my $schema = shift;
   my $install = '';
+  my $is_pg = $DCBSettings::config->{db}->{driver} =~ /^Pg/;
   foreach my $table (keys %{$schema->{schema}}) {
     if ($table && $schema->{schema}->{$table}) {
       my $fields = $schema->{schema}->{$table};
       if (!db_table_exists($table)) {
       $install = "CREATE TABLE $table (";
         foreach my $key (keys %{$fields}) {
-          $install .= "$key $fields->{$key}->{type}";
-          if ($fields->{$key}->{not_null}) {
+          my $mapped_type = db_map_type($fields->{$key}->{type}, $fields->{$key});
+          $install .= "$key $mapped_type";
+          # SERIAL in Pg implies NOT NULL, so skip for Pg autoincrement fields
+          if ($fields->{$key}->{not_null} && !($is_pg && $fields->{$key}->{autoincrement})) {
             $install .= " NOT NULL";
           }
           if ($fields->{$key}->{primary_key}){
@@ -105,7 +127,7 @@ sub db_create_table {
                elsif ($DCBSettings::config->{db}->{driver} =~ /^mysql/) {
                  $install .= " AUTO_INCREMENT";
                }
-               # Pg uses SERIAL type instead — handled by changing type to SERIAL
+               # Pg uses SERIAL type instead — handled by db_map_type()
           }
           $install .= ", "
         }
