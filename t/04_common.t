@@ -43,10 +43,10 @@ $escaped = DCBCommon::common_escape_string('(group)');
 is( $escaped, '\(group\)', 'Parentheses are escaped' );
 
 $escaped = DCBCommon::common_escape_string('[bracket]');
-is( $escaped, '\[bracket]', 'Open bracket is escaped' );
+is( $escaped, '\[bracket\]', 'Brackets are escaped' );
 
 $escaped = DCBCommon::common_escape_string('{brace}');
-is( $escaped, '\{brace}', 'Open brace is escaped' );
+is( $escaped, '\{brace\}', 'Braces are escaped' );
 
 $escaped = DCBCommon::common_escape_string('$dollar');
 is( $escaped, '\$dollar', 'Dollar sign is escaped' );
