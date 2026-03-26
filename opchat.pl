@@ -64,7 +64,7 @@ sub data_arrival {
     my $chat = $1;
     my $user = $oplist->{lc($name)};
     opchat_sendtoopchat($name, $chat);
-    if ($chat =~ /^(?:$::c)add\s?(\S+)/ && user_is_admin($user)) {
+    if ($chat =~ /^(?:$::c)add\s?(\S+)/ && $user && user_is_admin($user)) {
       my @chatarray = split(/\s+/, $1);
       my $invitee = shift(@chatarray);
       my %user = (
@@ -75,7 +75,7 @@ sub data_arrival {
       $logger->debug("Added $invitee to oplist.");
       opchat_sendtoopchat($botname, "Added $invitee to chat!");
     }
-    if ($chat =~ /^(?:$::c)remove\s?(\S+)/ && user_is_admin($oplist->{lc($name)})) {
+    elsif ($chat =~ /^(?:$::c)remove\s?(\S+)/ && $user && user_is_admin($user)) {
       my @chatarray = split(/\s+/, $1);
       my $rejectee = shift(@chatarray);
       if ($oplist->{$rejectee}) {
@@ -86,7 +86,7 @@ sub data_arrival {
         }
       }
     }
-    if ($chat =~ /^(?:$::c)list$/ && user_is_admin($oplist->{lc($name)})) {
+    elsif ($chat =~ /^(?:$::c)list$/ && $user && user_is_admin($user)) {
       my %permissions;
       foreach my $key (sort keys %{+PERMISSIONS}) {
         $permissions{PERMISSIONS->{$key}} = $key;
@@ -97,7 +97,7 @@ sub data_arrival {
       }
       opchat_sendtoopchat($botname, $message);
     }
-    if ($chat =~ /^(?:$::c)commands$/ && user_is_admin($oplist->{lc($name)})) {
+    elsif ($chat =~ /^(?:$::c)commands$/ && $user && user_is_admin($user)) {
       my $message = "$botname commands:\n";
       $message .= "-add: Adds a user to this chat. Usage -add <username>\n";
       $message .= "-remove: Removes a user from this chat. Usage -remove <username>\n";
@@ -159,7 +159,7 @@ sub opchat_sendtoopchat {
   $message =~ s/\|/&#124;/g;
   $message = expand($message);
   my $botname = $DCBSettings::config->{botname};
-  if ($oplist->{$name}->{name} eq $name || $name eq $botname) {
+  if ($name eq $botname || ($oplist->{lc($name)} && $oplist->{lc($name)}->{name} eq $name)) {
     foreach my $op (keys %{$oplist}) {
       unless ($name eq $op) {
         odch::data_to_user($op, "\$To: $op From: $botname \$<$name> $message|");
@@ -168,6 +168,6 @@ sub opchat_sendtoopchat {
   }
 }
 
-# Additional subroutine and exit to allow exit 0 and happy travis-ci
+# Exit cleanly for CI boot test
 
 exit 0;
