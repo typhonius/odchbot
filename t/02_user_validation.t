@@ -65,15 +65,13 @@ like( $errors[0], qr/illegal/i, 'Error message mentions illegal characters' );
 @errors = DCBUser::user_invalid_name('user\\path');
 ok( scalar @errors > 0, 'Name with backslash is invalid' );
 
-# Note: The current regex allows names like "user<script>" because
-# the name contains word characters (\w matches 'user'), and the
-# regex only checks if the name has NO word chars. This is a known
-# limitation of the current validation logic.
+# The anchored regex ($name !~ /^[\w-]+$/) rejects names containing
+# any characters outside the \w and hyphen set.
 @errors = DCBUser::user_invalid_name('user<script>');
-is( scalar @errors, 0, 'Name with angle brackets but also word chars passes current regex' );
+ok( scalar @errors > 0, 'Name with angle brackets is invalid' );
 
 @errors = DCBUser::user_invalid_name('user name');
-is( scalar @errors, 0, 'Name with space but also word chars passes current regex' );
+ok( scalar @errors > 0, 'Name with space is invalid' );
 
 # ---- Test user_invalid_name - reserved names ----
 @errors = DCBUser::user_invalid_name('TestBot');
