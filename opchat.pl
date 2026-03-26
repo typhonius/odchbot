@@ -20,7 +20,16 @@ use DCBSettings;
 use DCBUser;
 
 # Enable the logger and load configuration.
-Log::Log4perl->init('opchat.log4perl.conf');
+# Read config and resolve relative paths against the script's directory so
+# the embedded Perl inside opendchub works regardless of the hub's CWD.
+{
+  open my $fh, '<', "$FindBin::Bin/opchat.log4perl.conf"
+    or die "Cannot open $FindBin::Bin/opchat.log4perl.conf: $!";
+  my $conf = do { local $/; <$fh> };
+  close $fh;
+  $conf =~ s{^(log4perl\.appender\.\w+\.filename=)(?!/)(.+)$}{$1$FindBin::Bin/$2}mg;
+  Log::Log4perl->init(\$conf);
+}
 my $logger = Log::Log4perl->get_logger('OPChat');
 
 my $oplist = {};
