@@ -57,3 +57,6 @@ jobs:
 
       - name: Boot test
         run: perl ./odchbot.pl && perl ./opchat.pl
+
+      - name: Run test suite
+        run: prove -lv t/
