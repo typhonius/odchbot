@@ -67,19 +67,27 @@ sub data_arrival {
     if ($chat =~ /^(?:$::c)add\s?(\S+)/ && $user && user_is_admin($user)) {
       my @chatarray = split(/\s+/, $1);
       my $invitee = shift(@chatarray);
-      my %user = (
-        'name' => $invitee,
-        'permission' => PERMISSIONS->{AUTHENTICATED},
-      );
-      $oplist->{lc($invitee)} = \%user;
-      $logger->debug("Added $invitee to oplist.");
-      opchat_sendtoopchat($botname, "Added $invitee to chat!");
+      if (lc($invitee) eq lc($botname)) {
+        opchat_sendtoopchat($botname, "Cannot add the bot to chat.");
+      }
+      elsif ($oplist->{lc($invitee)}) {
+        opchat_sendtoopchat($botname, "$invitee is already in chat.");
+      }
+      else {
+        my %user = (
+          'name' => $invitee,
+          'permission' => PERMISSIONS->{AUTHENTICATED},
+        );
+        $oplist->{lc($invitee)} = \%user;
+        $logger->debug("Added $invitee to oplist.");
+        opchat_sendtoopchat($botname, "Added $invitee to chat!");
+      }
     }
     elsif ($chat =~ /^(?:$::c)remove\s?(\S+)/ && $user && user_is_admin($user)) {
       my @chatarray = split(/\s+/, $1);
       my $rejectee = shift(@chatarray);
-      if ($oplist->{$rejectee}) {
-        if (!user_is_admin($oplist->{$rejectee})) {
+      if ($oplist->{lc($rejectee)}) {
+        if (!user_is_admin($oplist->{lc($rejectee)})) {
           delete $oplist->{lc($rejectee)};
           $logger->debug("Removed $rejectee from oplist.");
           opchat_sendtoopchat($botname, "Removed $rejectee from chat!");
@@ -161,8 +169,9 @@ sub opchat_sendtoopchat {
   my $botname = $DCBSettings::config->{botname};
   if ($name eq $botname || ($oplist->{lc($name)} && $oplist->{lc($name)}->{name} eq $name)) {
     foreach my $op (keys %{$oplist}) {
-      unless ($name eq $op) {
-        odch::data_to_user($op, "\$To: $op From: $botname \$<$name> $message|");
+      unless (lc($name) eq $op) {
+        my $real_nick = $oplist->{$op}->{name};
+        odch::data_to_user($real_nick, "\$To: $real_nick From: $botname \$<$name> $message|");
       }
     }
   }
