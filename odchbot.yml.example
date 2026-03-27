@@ -29,4 +29,3 @@ config:
   timezone: Australia/Canberra
   username_anonymous: Anonymous
   username_max_length: 35
-  version: 3.0.1
