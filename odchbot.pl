@@ -20,7 +20,7 @@ use DCBDatabase;
 use DCBCommon;
 use DCBUser;
 
-our $VERSION = '3.0.1';
+our $VERSION = '3.0.2';
 
 # Enable the logger and load configuration.
 # Read config and resolve relative paths against the script's directory so
