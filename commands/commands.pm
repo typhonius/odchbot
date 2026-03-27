@@ -20,7 +20,7 @@ sub main {
 
   if ($specific && $DCBCommon::registry->{commands}->{$specific} && (user_access($user, $DCBCommon::registry->{commands}->{$specific}->{permissions}))) {
     my $command = $DCBCommon::registry->{commands}->{$specific};
-    $message .= DCBCommon::common_escape_string("$DCBSettings::config->{cp}") . "$command->{name}: $command->{description}";
+    $message .= $DCBSettings::config->{cp} . "$command->{name}: $command->{description}";
     if ($command->{alias}) {
       $message .= "\nAliases: ";
       my $aliases = thaw($command->{alias});
@@ -43,7 +43,7 @@ sub main {
       my $command = $DCBCommon::registry->{commands}->{$commands};
       if ($commands eq $DCBCommon::registry->{commands}->{$commands}->{name}) {
         if (user_access($user, $command->{permissions})) {
-          $message .= DCBCommon::common_escape_string("$DCBSettings::config->{cp}") . "$command->{name}: $command->{description}\n";
+          $message .= $DCBSettings::config->{cp} . "$command->{name}: $command->{description}\n";
         }
       }
     }
