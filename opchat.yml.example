@@ -9,4 +9,4 @@ config:
   cp: "-"
   debug: 1
   topic: Welcome to OPChat
-  version: v1
+  version: 1.0.0
