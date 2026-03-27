@@ -20,6 +20,8 @@ use DCBDatabase;
 use DCBCommon;
 use DCBUser;
 
+our $VERSION = '3.0.1';
+
 # Enable the logger and load configuration.
 # Read config and resolve relative paths against the script's directory so
 # the embedded Perl inside opendchub works regardless of the hub's CWD.
@@ -79,8 +81,8 @@ sub main() {
   odch::register_script_name($DCBSettings::config->{botname});
   odch_sendmessage("","",1,"\$HubName $DCBSettings::config->{topic}");
   my $loadtime = tv_interval ( $start_time ) ;
-  odch_sendmessage("","",4,"$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
-  $logger->debug("$DCBSettings::config->{botname} version $DCBSettings::config->{version} - loaded in $loadtime seconds!");
+  odch_sendmessage("","",4,"$DCBSettings::config->{botname} version $VERSION - loaded in $loadtime seconds!");
+  $logger->debug("$DCBSettings::config->{botname} version $VERSION - loaded in $loadtime seconds!");
 }
 
 sub data_arrival() {
@@ -180,7 +182,7 @@ sub odch_login() {
     return;
   }
 
-  my $tag = "$DCBSettings::config->{bottag} V:$DCBSettings::config->{version},M:P,H:1/3/3,S:7";
+  my $tag = "$DCBSettings::config->{bottag} V:$VERSION,M:P,H:1/3/3,S:7";
   odch_sendmessage($user->{name}, "", 11, "\$MyINFO \$ALL $DCBSettings::config->{botname} " .
     "$DCBSettings::config->{botdescription}<$tag>\$\$\$$DCBSettings::config->{botspeed}>" .
     "\$$DCBSettings::config->{botemail}\$$DCBSettings::config->{botshare}\$");
