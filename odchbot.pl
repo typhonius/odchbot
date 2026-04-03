@@ -220,8 +220,7 @@ sub odch_hooks {
   if ($DCBCommon::registry->{hooks}->{$hook}) {
     foreach my $commandname (keys %{$DCBCommon::registry->{hooks}->{$hook}}) {
       my $command = $DCBCommon::registry->{commands}->{$commandname};
-      #($command, $hook, $user, $params) = odch_alter($command, $hook, $user, $params);
-      # Wondering if we need to pass the $command object all the way through TODO
+      ($command, $hook, $user, $params) = odch_alter($command, $hook, $user, $params);
       push(@return, DCBCommon::commands_run_command($command, $hook, $user, $params));
     }
     odch_respond(@return);

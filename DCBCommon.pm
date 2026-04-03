@@ -189,9 +189,17 @@ sub commands_unload_commands {
   my $command = shift;
   unless ($command->{required}) {
     my %where = (name => $command->{name});
-    # TODO transaction here?
-    commands_uninstall_command($command);
-    DCBDatabase::db_delete('registry', \%where);
+    eval {
+      $DCBDatabase::dbh->begin_work;
+      commands_uninstall_command($command);
+      DCBDatabase::db_delete('registry', \%where);
+      $DCBDatabase::dbh->commit;
+    };
+    if ($@) {
+      eval { $DCBDatabase::dbh->rollback };
+      die $@;
+    }
+    # Only remove from memory after the DB transaction succeeds
     registry_remove($command);
     return 1;
   }
