@@ -35,6 +35,18 @@ sub schema {
   return \%schema;
 }
 
+sub init {
+  $DCBCommon::COMMON->{ban}->{banned_uids} = {};
+  my @fields = ('uid', 'expire');
+  my %where = ();
+  my $banh = DCBDatabase::db_select('ban', \@fields, \%where);
+  while (my $ban = $banh->fetchrow_hashref()) {
+    if ($ban->{expire} > time() || $ban->{expire} == -1) {
+      $DCBCommon::COMMON->{ban}->{banned_uids}->{$ban->{uid}} = 1;
+    }
+  }
+}
+
 sub main {
   my $command = shift;
   my $user = shift;
@@ -122,6 +134,7 @@ sub main {
             'message' => $banmessage,
           );
           DCBDatabase::db_insert('ban', \%fields);
+          $DCBCommon::COMMON->{ban}->{banned_uids}->{$victim->{uid}} = 1;
         }
         else {
           my @nickban = (
@@ -223,12 +236,8 @@ sub prelogin {
 }
 
 sub ban_check_fast {
-  # TODO use a global to keep track of bans before going to the db
   my $user = shift;
-  my @fields = (1);
-  my %where = ('uid' => $user->{uid});
-  my $banh = DCBDatabase::db_select('ban', \@fields, \%where);
-  return $banh->fetchrow_array();
+  return $DCBCommon::COMMON->{ban}->{banned_uids}->{$user->{uid}} // 0;
 }
 
 sub ban_calculate_ban_time {
@@ -248,6 +257,7 @@ sub ban_calculate_ban_time {
 sub timer {
   my %where = ('expire' => { '<' => time() });
   DCBDatabase::db_delete('ban', \%where);
+  init();
 }
 
 1;

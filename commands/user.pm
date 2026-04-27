@@ -83,10 +83,9 @@ sub postlogin {
       message  => $welcome,
       user     => $user->{name},
       fromuser   => '',
-      type     => MESSAGE->{'PUBLIC_SINGLE'},
+      type     => MESSAGE->{'HUB_PM'},
     },
   );
-  # TODO change the type here to be sent from the hub perhaps?
 
   push(@return, @login);
 

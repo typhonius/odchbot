@@ -8,6 +8,7 @@ permissions:
  - OPERATOR
  - ADMINISTRATOR
 hooks:
+ - init
  - postlogin
  - line
 

@@ -45,6 +45,14 @@ sub init {
   }
 
   $DCBCommon::COMMON->{stats}->{hubstats} = $stats;
+
+  # Load historical highs
+  my @max_fields = ('MAX(number_users) AS max_users', 'MAX(total_share) AS max_share');
+  my %max_where = ();
+  my $maxh = DCBDatabase::db_select('stats', \@max_fields, \%max_where);
+  my $max = $maxh->fetchrow_hashref();
+  $DCBCommon::COMMON->{stats}->{max_users} = $max->{max_users} // 0;
+  $DCBCommon::COMMON->{stats}->{max_share} = $max->{max_share} // 0;
 }
 
 sub main {
@@ -60,8 +68,8 @@ sub main {
   $message .= "Total Share => " . DCBCommon::common_format_size($DCBCommon::COMMON->{stats}->{hubstats}->{total_share}) . "\n";
   $message .= "User Number => $DCBCommon::COMMON->{stats}->{hubstats}->{number_users}\n";
   $message .= "Searches => $DCBCommon::COMMON->{stats}->{hubstats}->{searches}\n";
-
-  # TODO add in historical high and low data
+  $message .= "Historical High Users => $DCBCommon::COMMON->{stats}->{max_users}\n";
+  $message .= "Historical High Share => " . DCBCommon::common_format_size($DCBCommon::COMMON->{stats}->{max_share}) . "\n";
 
   @return = (
     {

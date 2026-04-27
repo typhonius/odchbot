@@ -28,6 +28,16 @@ sub schema {
   return \%schema;
 }
 
+sub init {
+  $DCBCommon::COMMON->{tell}->{pending_uids} = {};
+  my @fields = ('to_uid');
+  my %where = ();
+  my $tellh = DCBDatabase::db_select('tell', \@fields, \%where);
+  while (my $row = $tellh->fetchrow_hashref()) {
+    $DCBCommon::COMMON->{tell}->{pending_uids}->{$row->{to_uid}} = 1;
+  }
+}
+
 sub main {
   my $command = shift;
   my $user = shift;
@@ -50,6 +60,7 @@ sub main {
         'message' => $tell_message,
       );
       DCBDatabase::db_insert('tell', \%fields);
+      $DCBCommon::COMMON->{tell}->{pending_uids}->{$to_user->{uid}} = 1;
       my $action = (!$to_user->{disconnect_time} || $to_user->{connect_time} > $to_user->{disconnect_time}) ? 'speak in chat' : 'log on';
       $message = "Message from $user->{name} to $to_user->{name} saved and will be delivered next time they $action";
     }
@@ -112,14 +123,7 @@ sub tell_handler {
 
 sub tell_check_tells {
   my $user = shift;
-  # TODO Check global for uid || check db
-  my @fields = ('to_uid');
-  my %where = ('to_uid' => $user->{uid});
-  my $tellcheckh = DCBDatabase::db_select('tell', 1, \%where, \(), 1);
-  if ($tellcheckh->fetchrow_array()) {
-    return 1;
-  }
-  return 0;
+  return $DCBCommon::COMMON->{tell}->{pending_uids}->{$user->{uid}} // 0;
 }
 
 sub tell_get_tells {
@@ -137,6 +141,7 @@ sub tell_get_tells {
     my %deletetid = ('tid' => $tell->{tid});
     DCBDatabase::db_delete('tell', \%deletetid);
   }
+  delete $DCBCommon::COMMON->{tell}->{pending_uids}->{$user->{uid}};
   return $return;
 }
 

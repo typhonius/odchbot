@@ -130,7 +130,6 @@ sub registry_rebuild {
 sub commands_install_command {
   my $command = shift;
   my $schema = commands_run_command($command, 'schema');
-  # TODO config_set support
   if ($schema->{schema}) {
     DCBDatabase::db_create_table($schema);
   }

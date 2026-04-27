@@ -101,7 +101,6 @@ sub db_map_type {
 }
 
 sub db_create_table {
-  # TODO my $stmt_and_val = $sql->generate('create table', \$table, \@fields);
   my $schema = shift;
   my $install = '';
   my $is_pg = $DCBSettings::config->{db}->{driver} =~ /^Pg/;

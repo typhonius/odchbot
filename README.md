@@ -311,7 +311,12 @@ Due to requirements of the bot, the `%schema` array must be returned by referenc
 Debugging/Logging
 -----------------
 
-TODO: create a log file and write to that
+Logging is handled by Log4perl. Configuration files are provided for both the main bot and operator chat:
+
+- `odchbot.log4perl.conf` — main bot logging config
+- `opchat.log4perl.conf` — operator chat logging config
+
+Log levels can be adjusted in these files (DEBUG, INFO, WARN, ERROR, FATAL). Log file paths are specified via the `filename` parameter in each config. When running inside OpenDCHub's embedded Perl, relative paths are resolved against `$FindBin::Bin` automatically.
 
 Troubleshooting/Bugs
 --------------------
