@@ -53,6 +53,7 @@ sub init {
   my $max = $maxh->fetchrow_hashref();
   $DCBCommon::COMMON->{stats}->{max_users} = $max->{max_users} // 0;
   $DCBCommon::COMMON->{stats}->{max_share} = $max->{max_share} // 0;
+  return;
 }
 
 sub main {
