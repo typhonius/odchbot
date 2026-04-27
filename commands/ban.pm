@@ -45,6 +45,7 @@ sub init {
       $DCBCommon::COMMON->{ban}->{banned_uids}->{$ban->{uid}} = 1;
     }
   }
+  return;
 }
 
 sub main {

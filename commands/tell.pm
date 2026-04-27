@@ -36,6 +36,7 @@ sub init {
   while (my $row = $tellh->fetchrow_hashref()) {
     $DCBCommon::COMMON->{tell}->{pending_uids}->{$row->{to_uid}} = 1;
   }
+  return;
 }
 
 sub main {
