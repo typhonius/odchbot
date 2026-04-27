@@ -37,7 +37,7 @@ sub new { return bless {}, shift }
 
 sub common_init {
   # Instantiate a shared variable for other commands to use.
-  our $COMMON = ();
+  our $COMMON = {};
 }
 
 sub commands_init {
@@ -48,20 +48,22 @@ sub commands_init {
     return;
   };
   if ($@) {
-    print "Unable to load FindBin or push commands to INC.";
-    die;
+    warn("commands_init failed: $@");
+    return;
   }
 }
 
 sub registry_init {
-  our $registry = ();
+  our $registry = {};
   my $registryh = DCBDatabase::db_select('registry');
-  while (my $command = $registryh->fetchrow_hashref()) {
-    registry_add($command);
+  if ($registryh) {
+    while (my $command = $registryh->fetchrow_hashref()) {
+      registry_add($command);
+    }
   }
   # If the bot has never been initialised the registry won't have anything
   # so we need to parse all the commands and fill the registry.
-  if (!$registry) {
+  if (!$registry->{commands}) {
     registry_rebuild();
   }
   return;
@@ -71,16 +73,22 @@ sub registry_add {
   my $command = shift;
   $DCBCommon::registry->{commands}->{$command->{name}} = $command;
   if ($command->{alias}) {
-    my $aliases = decode_json($command->{alias});
-    foreach (@$aliases) {
-      $DCBCommon::registry->{commands}->{$_} = dclone($command);
-    }
+    eval {
+      my $aliases = decode_json($command->{alias});
+      foreach (@$aliases) {
+        $DCBCommon::registry->{commands}->{$_} = dclone($command);
+      }
+    };
+    warn("Failed to decode aliases for $command->{name}: $@") if $@;
   }
   if ($command->{hooks}) {
-    my $hooks = decode_json($command->{hooks});
-    foreach (@$hooks) {
-      $DCBCommon::registry->{hooks}->{$_}->{$command->{name}} = $command->{name};
-    }
+    eval {
+      my $hooks = decode_json($command->{hooks});
+      foreach (@$hooks) {
+        $DCBCommon::registry->{hooks}->{$_}->{$command->{name}} = $command->{name};
+      }
+    };
+    warn("Failed to decode hooks for $command->{name}: $@") if $@;
   }
 }
 
@@ -196,7 +204,8 @@ sub commands_unload_commands {
     };
     if ($@) {
       eval { $DCBDatabase::dbh->rollback };
-      die $@;
+      warn("Failed to unload command $command->{name}: $@");
+      return 0;
     }
     # Only remove from memory after the DB transaction succeeds
     registry_remove($command);
@@ -226,8 +235,8 @@ sub commands_run_command {
         load $commandname;
       };
       if ($@) {
-        print $@;
-        die;
+        warn("Failed to load command module $commandname: $@");
+        return;
       }
     }
     if ($commandname->can($hook)) {

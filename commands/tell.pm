@@ -138,7 +138,8 @@ sub tell_get_tells {
     # Consider using a user_cache
     my $timestamp = DCBCommon::common_timestamp_time($tell->{time});
     my $from_user = user_load($tell->{from_uid});
-    $return .= "At $timestamp, $from_user->{name} said: $tell->{message}\n";
+    my $from_name = $from_user ? ($from_user->{name} // 'Unknown') : 'Unknown';
+    $return .= "At $timestamp, $from_name said: $tell->{message}\n";
     my %deletetid = ('tid' => $tell->{tid});
     DCBDatabase::db_delete('tell', \%deletetid);
   }

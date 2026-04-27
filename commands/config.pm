@@ -8,8 +8,8 @@ use YAML::AppConfig;
 use DCBSettings;
 use DCBCommon;
 
-# Config keys that cannot be modified via chat commands
-my @PROTECTED_KEYS = qw(db jabber commandPath);
+# Config keys that cannot be modified or viewed via chat commands
+my @PROTECTED_KEYS = qw(db jabber commandPath bug_github_key);
 
 sub main {
   my $command = shift;
@@ -19,7 +19,13 @@ sub main {
   my @return = ();
 
   my $message = "Incorrect/invalid config key";
-  my $yaml = YAML::AppConfig->new( file => $DCBSettings::cwd . 'odchbot.yml' );
+  my $yaml;
+  eval { $yaml = YAML::AppConfig->new( file => $DCBSettings::cwd . 'odchbot.yml' ); };
+  if ($@) {
+    $message = "Failed to load config file: $@";
+    my @return = ({ param => "message", message => $message, user => $user->{name}, touser => '', type => MESSAGE->{'PUBLIC_SINGLE'} });
+    return @return;
+  }
   my $conf = $DCBSettings::config;
 
   # Put the chat into an array and remove the first word (the flag of get/set)
@@ -29,8 +35,11 @@ sub main {
   my $value = join(' ', @chatarray);
   if ($op) {
     if ($op =~ /^get$/) {
-      if (my $var = DCBSettings::config_get($variable)) {
-        $message = $var;
+      if (grep { $_ eq $variable } @PROTECTED_KEYS) {
+        $message = "Cannot view protected config key: $variable";
+      }
+      elsif (defined(my $var = DCBSettings::config_get($variable))) {
+        $message = "$var";
       }
     }
     elsif ($op =~ /^set$/) {
@@ -59,7 +68,10 @@ sub main {
   }
   else {
     $message = "Bot Configuration\n";
-    $message .= $yaml->dump();
+    my $dump = $yaml->dump();
+    # Redact sensitive values from the dump
+    $dump =~ s/(password|key|secret|token):\s*.+/$1: [REDACTED]/gi;
+    $message .= $dump;
     $message =~ s/ / &#8203;/g;
   }
 

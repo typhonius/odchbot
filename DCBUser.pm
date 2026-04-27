@@ -28,10 +28,12 @@ sub user_init() {
     push(@online, $_);
   }
   user_sanitize_disconnects(\@online);
-  our $userlist = ();
+  our $userlist = {};
   my $userh = DCBDatabase::db_select('users');
-  while (my $user = $userh->fetchrow_hashref()) {
-    $userlist->{lc($user->{name})} = $user;
+  if ($userh) {
+    while (my $user = $userh->fetchrow_hashref()) {
+      $userlist->{lc($user->{name})} = $user;
+    }
   }
 }
 
@@ -41,11 +43,10 @@ sub user_load_by_mail {
   my %where = ('mail' => $mail);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
+  return { mail => $mail } unless $userh;
 
-  # Send back the row as a ref hash array.
-  # ie username is $user->{'name'}
   my $user = $userh->fetchrow_hashref();
-  # If the user is new we must add their name to the returned hash
+  return { mail => $mail } unless $user;
   $user->{'mail'} = $user->{'mail'} ? $user->{'mail'} : $mail;
   return $user;
 }
@@ -56,11 +57,10 @@ sub user_load_by_name {
   my %where = ('name' => $name);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
+  return { name => $name } unless $userh;
 
-  # Send back the row as a ref hash array.
-  # ie username is $user->{'name'}
   my $user = $userh->fetchrow_hashref();
-  # If the user is new we must add their name to the returned hash
+  return { name => $name } unless $user;
   $user->{'name'} = $user->{'name'} ? $user->{'name'} : $name;
   return $user;
 }
@@ -70,9 +70,8 @@ sub user_load {
   my %where = ('uid' => $uid);
   my @fields = ('*');
   my $userh = DCBDatabase::db_select('users', \@fields, \%where);
+  return undef unless $userh;
 
-  # Send back the row as a ref hash array.
-  # ie username is $user->{'name'}
   my $user = $userh->fetchrow_hashref();
   return $user;
 }

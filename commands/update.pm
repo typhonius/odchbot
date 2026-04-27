@@ -15,9 +15,14 @@ sub main {
   my $output = '';
   # Use list form to prevent shell injection via config values
   my $old_dir = Cwd::getcwd();
-  chdir($DCBSettings::cwd) or die "Cannot chdir to $DCBSettings::cwd: $!";
-  $output = capture("git", "pull");
-  chdir($old_dir) or die "Cannot chdir back to $old_dir: $!";
+  eval {
+    chdir($DCBSettings::cwd) or die "Cannot chdir to $DCBSettings::cwd: $!";
+    $output = capture("git", "pull");
+  };
+  if ($@) {
+    $output = "Update failed: $@";
+  }
+  chdir($old_dir) if $old_dir;
   # temporarily removing the git log from the output as first time clones will not be able to run it
   #; " . 'git log @{1}..  --oneline');
   chomp($output);

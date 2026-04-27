@@ -256,9 +256,13 @@ sub ban_calculate_ban_time {
 }
 
 sub timer {
-  my %where = ('expire' => { '<' => time() });
+  # Delete expired bans but NOT permanent ones (expire = -1)
+  my %where = (
+    'expire' => [ -and => { '!=' => -1 }, { '<' => time() } ],
+  );
   DCBDatabase::db_delete('ban', \%where);
   init();
+  return;
 }
 
 1;

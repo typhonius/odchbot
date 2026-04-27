@@ -46,8 +46,11 @@ sub main {
     my $res = $ua->request($req);
 
     if ($res->is_success) {
-      my $response = decode_json($res->content);
-      $message .= "Github issue created here => " . $response->{'html_url'};;
+      eval {
+        my $response = decode_json($res->content);
+        $message .= "Github issue created here => " . $response->{'html_url'};
+      };
+      $message .= "Issue created but response parse failed" if $@;
     }
     else {
       $message .= $res->content;

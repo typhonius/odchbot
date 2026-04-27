@@ -24,7 +24,7 @@ sub main {
   my $target = exists($DCBUser::userlist->{$info_user}) ? $DCBUser::userlist->{$info_user} : '';
 
   if ($target) {
-    if ($info_user =~ $user->{'name'} || user_access($user, PERMISSIONS->{ADMINISTRATOR})
+    if ($info_user eq lc($user->{'name'}) || user_access($user, PERMISSIONS->{ADMINISTRATOR})
       || user_access($user, PERMISSIONS->{OPERATOR})) {
 
       my $permissions = PERMISSIONS;

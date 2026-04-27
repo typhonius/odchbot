@@ -87,39 +87,42 @@ sub main() {
 
 sub data_arrival() {
   my ($name, $data) = @_;
-  $data =~ s/[\r\n]+/ /g;
-  if ($data =~ /^\$MyPass\s(.*)/) {
-    # Whenever a registered user enters this is their password
-    my $password = $1;
-  }
-  elsif ($data =~ /^\$Search/) {
-    # odch_hooks('search', $DCBUser::userlist->{lc($name)}, $data);
-    $DCBCommon::COMMON->{stats}->{hubstats}->{searches}++;
-  }
-  elsif ($data =~ /^\<\Q$name\E\>\s(.*)\|/) {
-    my $chat = $1;
-    # Deal with lines of chat
-    odch_hooks('line', $DCBUser::userlist->{lc($name)}, $chat);
-    # Deal with commands
-    if ($chat =~ /^(?:$::c)(\w+)\s?(.*)/) {
-      my $command = $1;
-      my $params = $2 ? $2 : '';
-      # Check the commands registry to see if this command exists prior to attempting to process.
-      if ($DCBCommon::registry->{commands}->{$command}) {
-        if (user_access($DCBUser::userlist->{lc($name)}, $DCBCommon::registry->{commands}->{$command}->{permissions})) {
-          my @return = DCBCommon::commands_run_command($DCBCommon::registry->{commands}->{$command}, 'main', $DCBUser::userlist->{lc($name)}, $params);
-          odch_respond(@return);
+  eval {
+    $data =~ s/[\r\n]+/ /g;
+    my $user = $DCBUser::userlist->{lc($name)};
+    if (!$user) {
+      # User not in userlist yet (race condition or internal user) — skip
+      return;
+    }
+    if ($data =~ /^\$MyPass\s(.*)/) {
+      # Whenever a registered user enters this is their password
+      my $password = $1;
+    }
+    elsif ($data =~ /^\$Search/) {
+      $DCBCommon::COMMON->{stats}->{hubstats}->{searches}++;
+    }
+    elsif ($data =~ /^\<\Q$name\E\>\s(.*)\|/) {
+      my $chat = $1;
+      odch_hooks('line', $user, $chat);
+      if ($chat =~ /^(?:$::c)(\w+)\s?(.*)/) {
+        my $command = $1;
+        my $params = $2 ? $2 : '';
+        if ($DCBCommon::registry->{commands}->{$command}) {
+          if (user_access($user, $DCBCommon::registry->{commands}->{$command}->{permissions})) {
+            my @return = DCBCommon::commands_run_command($DCBCommon::registry->{commands}->{$command}, 'main', $user, $params);
+            odch_respond(@return);
+          }
         }
       }
     }
-  }
-  elsif ($data =~ /^\$To:\s(\w+)\sFrom:\s$name\s\$\<\Q$name\E\>\s(.*)\|/) {
-    # matches PM
-    my $touser = $1;
-    my $chat = $2;
-    my @params = ($touser, $chat);
-    odch_hooks('pm', $DCBUser::userlist->{lc($name)}, \@params);
-  }
+    elsif ($data =~ /^\$To:\s(\w+)\sFrom:\s$name\s\$\<\Q$name\E\>\s(.*)\|/) {
+      my $touser = $1;
+      my $chat = $2;
+      my @params = ($touser, $chat);
+      odch_hooks('pm', $user, \@params);
+    }
+  };
+  $logger->error("data_arrival error: $@") if $@;
 }
 
 sub attempted_connection() {
@@ -129,23 +132,35 @@ sub attempted_connection() {
 
 sub op_admin_connected() {
   my ($user) = @_;
-  $logger->debug("$user connected as admin");
-  odch_login($user, PERMISSIONS->{ADMINISTRATOR});
+  eval {
+    $logger->debug("$user connected as admin");
+    odch_login($user, PERMISSIONS->{ADMINISTRATOR});
+  };
+  $logger->error("op_admin_connected error for $user: $@") if $@;
 }
 sub op_connected() {
   my ($user) = @_;
-  $logger->debug("$user connected as op");
-  odch_login($user, PERMISSIONS->{OPERATOR});
+  eval {
+    $logger->debug("$user connected as op");
+    odch_login($user, PERMISSIONS->{OPERATOR});
+  };
+  $logger->error("op_connected error for $user: $@") if $@;
 }
 sub reg_user_connected() {
   my ($user) = @_;
-  $logger->debug("$user connected as registered user");
-  odch_login($user, PERMISSIONS->{AUTHENTICATED});
+  eval {
+    $logger->debug("$user connected as registered user");
+    odch_login($user, PERMISSIONS->{AUTHENTICATED});
+  };
+  $logger->error("reg_user_connected error for $user: $@") if $@;
 }
 sub new_user_connected() {
   my ($user) = @_;
-  $logger->debug("$user connected as new user");
-  odch_login($user, PERMISSIONS->{ANONYMOUS});
+  eval {
+    $logger->debug("$user connected as new user");
+    odch_login($user, PERMISSIONS->{ANONYMOUS});
+  };
+  $logger->error("new_user_connected error for $user: $@") if $@;
 }
 
 sub odch_login() {
@@ -154,7 +169,7 @@ sub odch_login() {
   # from the database but new users will only have the $user->{'name'}
   my $user = user_load_by_name($name);
   $user->{'permission'} = $permission;
-  $user->{'new'} = !$user->{'uid'} ? 1 : 0;
+  $user->{'new'} = defined($user->{'uid'}) ? 0 : 1;
   if ($user->{'new'}) {
     $user->{'join_time'} = time();
     $user->{'join_share'} = odch_get('share', $user->{'name'});
@@ -201,14 +216,22 @@ sub odch_login() {
 
 sub user_disconnected() {
   my ($name) = @_;
-  $logger->debug("$name disconnected.");
-  my $user = $DCBUser::userlist->{lc($name)};
-  $user->{disconnect_time} = time();
-  user_disconnect($user);
-  odch_hooks('logout', $user);
-  $DCBCommon::COMMON->{stats}->{hubstats}->{disconnections}++;
-  $DCBCommon::COMMON->{stats}->{hubstats}->{total_share} = odch_get('variable', 'total_share');
-  $DCBCommon::COMMON->{stats}->{hubstats}->{number_users} = odch::count_users();
+  eval {
+    $logger->debug("$name disconnected.");
+    my $user = $DCBUser::userlist->{lc($name)};
+    if (!$user) {
+      # User was never in userlist (kicked during prelogin, or internal user)
+      return;
+    }
+    $user->{disconnect_time} = time();
+    user_disconnect($user);
+    odch_hooks('logout', $user);
+    delete $DCBUser::userlist->{lc($name)};
+    $DCBCommon::COMMON->{stats}->{hubstats}->{disconnections}++;
+    $DCBCommon::COMMON->{stats}->{hubstats}->{total_share} = odch_get('variable', 'total_share');
+    $DCBCommon::COMMON->{stats}->{hubstats}->{number_users} = odch::count_users();
+  };
+  $logger->error("user_disconnected error for $name: $@") if $@;
 }
 
 sub odch_hooks {
@@ -292,9 +315,12 @@ sub odch_odch {
 }
 
 sub hub_timer() {
-  $logger->debug('Hub timer fired.');
-  odch_hooks('timer');
-  $DCBCommon::COMMON->{variables}->{hub_timer_last_run} = time();
+  eval {
+    $logger->debug('Hub timer fired.');
+    odch_hooks('timer');
+    $DCBCommon::COMMON->{variables}->{hub_timer_last_run} = time();
+  };
+  $logger->error("hub_timer error: $@") if $@;
 }
 
 sub odch_sendmessage {

@@ -40,7 +40,7 @@ sub main {
 
     if ($row) {
       my $author = DCBUser::user_load($row->{uid});
-      my $author_name = $author->{name} || 'Unknown';
+      my $author_name = ($author && $author->{name}) ? $author->{name} : 'Unknown';
       my $time = DCBCommon::common_timestamp_time($row->{time});
       $message = "\"$row->{chat}\"\n  -- $author_name ($time)";
     }

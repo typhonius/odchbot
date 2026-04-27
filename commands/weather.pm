@@ -8,7 +8,7 @@ use lib "$FindBin::Bin/..";
 use DCBSettings;
 use DCBCommon;
 
-use LWP::Simple;
+use LWP::UserAgent;
 use XML::Simple;
 
 sub schema {
@@ -47,14 +47,26 @@ sub main {
 }
 
 sub weather_fetch_weather {
-    my $weather_feed = DCBSettings::config_get('weather_feed');
-    my $content = get($weather_feed);
-    my $data = XMLin($content);
+    my $message;
+    eval {
+      my $weather_feed = DCBSettings::config_get('weather_feed');
+      my $ua = LWP::UserAgent->new(timeout => 10);
+      my $response = $ua->get($weather_feed);
+      if (!$response->is_success) {
+        $message = "Weather: Feed unavailable (" . $response->status_line . ")";
+        return;
+      }
+      my $data = XMLin($response->content);
 
-    my $c = $data->{channel}->{item}->[0]->{'w:current'};
-    my $f = $data->{channel}->{item}->[1]->{'w:forecast'};
+      my $c = $data->{channel}->{item}->[0]->{'w:current'};
+      my $f = $data->{channel}->{item}->[1]->{'w:forecast'};
 
-    my $current = <<EOF;
+      if (!$c || !$f) {
+        $message = "Weather: Unexpected feed format";
+        return;
+      }
+
+      my $current = <<EOF;
       Temperature:  $c->{temperature} °C
       Dew Point:      $c->{dewPoint} °C
       Rel. Humidity:  $c->{humidity} \%
@@ -63,21 +75,24 @@ sub weather_fetch_weather {
       Rain since 9am: $c->{rain} mm
 EOF
 
-    my $message = "Weather:\n";
-    $message .= "Current conditions:\n" . $current;
+      $message = "Weather:\n";
+      $message .= "Current conditions:\n" . $current;
 
-    $message .= "\n3-day forecast:\n";
-    foreach my $day (@{$f}) {
-      $message .= <<EOF;
+      $message .= "\n3-day forecast:\n";
+      foreach my $day (@{$f}) {
+        $message .= <<EOF;
       $day->{day}:
         Temperatures: $day->{min}–$day->{max} °C
         Conditions:   $day->{description}
 EOF
+      }
+      $DCBCommon::COMMON->{'weather'} = $message;
+      DCBSettings::config_set('weather_last_called', time());
+    };
+    if ($@) {
+      $message = "Weather: Error fetching data";
     }
-    $DCBCommon::COMMON->{'weather'} = $message;
-    DCBSettings::config_set('weather_last_called', time());
-    return $message;
-
+    return $message || "Weather: No data available";
 }
 
 sub timer {
