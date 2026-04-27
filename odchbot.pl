@@ -179,9 +179,9 @@ sub odch_login() {
   $user->{'connect_share'} = odch_get('share', $user->{'name'});
   $user->{'ip'} = odch_get('ip', $user->{'name'});
   $user->{'client'} = odch_get('description', $user->{name});
-  # TLS status: prefer XS function (checks actual SSL state), fall back to callback arg
-  if (exists &odch::is_tls) {
-    $user->{'conn_type'} = odch::is_tls($user->{name}) ? 'tls' : 'plain';
+  # TLS status: use dispatch table if available, fall back to callback arg
+  if ($odch_dispatch_table->{is_tls}) {
+    $user->{'conn_type'} = odch_get('is_tls', $user->{name}) ? 'tls' : 'plain';
   } else {
     $user->{'conn_type'} = $conn_type || 'plain';
   }
