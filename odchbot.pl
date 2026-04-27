@@ -43,6 +43,7 @@ our $odch_dispatch_table ||= {
   description => \&odch::get_description,
   count_users => \&odch::count_users,
   user_list => \&odch::get_user_list,
+  (exists &odch::is_tls ? (is_tls => \&odch::is_tls) : ()),
 };
 
 eval {
@@ -169,7 +170,6 @@ sub odch_login() {
   # from the database but new users will only have the $user->{'name'}
   my $user = user_load_by_name($name);
   $user->{'permission'} = $permission;
-  $user->{'conn_type'} = $conn_type || 'plain';
   $user->{'new'} = defined($user->{'uid'}) ? 0 : 1;
   if ($user->{'new'}) {
     $user->{'join_time'} = time();
@@ -179,6 +179,12 @@ sub odch_login() {
   $user->{'connect_share'} = odch_get('share', $user->{'name'});
   $user->{'ip'} = odch_get('ip', $user->{'name'});
   $user->{'client'} = odch_get('description', $user->{name});
+  # TLS status: prefer XS function (checks actual SSL state), fall back to callback arg
+  if (exists &odch::is_tls) {
+    $user->{'conn_type'} = odch::is_tls($user->{name}) ? 'tls' : 'plain';
+  } else {
+    $user->{'conn_type'} = $conn_type || 'plain';
+  }
 
   my @errors = ();
   @errors = user_check_errors($user);
