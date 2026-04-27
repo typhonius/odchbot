@@ -72,10 +72,10 @@ sub postlogin {
 
   my $member_time = DCBCommon::common_timestamp_duration($user->{'join_time'});
   my $share_delta = DCBCommon::common_format_size($user->{'connect_share'} - $user->{'join_share'});
-  my $tls = (exists &odch::is_tls && odch::is_tls($user->{name})) ? 'TLS' : 'Plain';
+  my $conn = uc($user->{'conn_type'} || 'plain');
 
   my $welcome = "\n" . ('-' x 70) . "\n";
-  $welcome .= "***===[ $user->{'name'} :: $perm :: $tls ]===***\n";
+  $welcome .= "***===[ $user->{'name'} :: $perm :: $conn ]===***\n";
   $welcome .= "***===[ $user->{'client'} ]===***\n";
   $welcome .= "***===[ Member for: $member_time :: Share delta: $share_delta ]===***\n";
   $welcome .= '-' x 70;

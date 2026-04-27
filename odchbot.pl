@@ -131,44 +131,45 @@ sub attempted_connection() {
 }
 
 sub op_admin_connected() {
-  my ($user) = @_;
+  my ($user, $conn_type) = @_;
   eval {
-    $logger->debug("$user connected as admin");
-    odch_login($user, PERMISSIONS->{ADMINISTRATOR});
+    $logger->debug("$user connected as admin ($conn_type)");
+    odch_login($user, PERMISSIONS->{ADMINISTRATOR}, $conn_type);
   };
   $logger->error("op_admin_connected error for $user: $@") if $@;
 }
 sub op_connected() {
-  my ($user) = @_;
+  my ($user, $conn_type) = @_;
   eval {
-    $logger->debug("$user connected as op");
-    odch_login($user, PERMISSIONS->{OPERATOR});
+    $logger->debug("$user connected as op ($conn_type)");
+    odch_login($user, PERMISSIONS->{OPERATOR}, $conn_type);
   };
   $logger->error("op_connected error for $user: $@") if $@;
 }
 sub reg_user_connected() {
-  my ($user) = @_;
+  my ($user, $conn_type) = @_;
   eval {
-    $logger->debug("$user connected as registered user");
-    odch_login($user, PERMISSIONS->{AUTHENTICATED});
+    $logger->debug("$user connected as registered user ($conn_type)");
+    odch_login($user, PERMISSIONS->{AUTHENTICATED}, $conn_type);
   };
   $logger->error("reg_user_connected error for $user: $@") if $@;
 }
 sub new_user_connected() {
-  my ($user) = @_;
+  my ($user, $conn_type) = @_;
   eval {
-    $logger->debug("$user connected as new user");
-    odch_login($user, PERMISSIONS->{ANONYMOUS});
+    $logger->debug("$user connected as new user ($conn_type)");
+    odch_login($user, PERMISSIONS->{ANONYMOUS}, $conn_type);
   };
   $logger->error("new_user_connected error for $user: $@") if $@;
 }
 
 sub odch_login() {
-  my ($name, $permission) = @_;
+  my ($name, $permission, $conn_type) = @_;
 
   # from the database but new users will only have the $user->{'name'}
   my $user = user_load_by_name($name);
   $user->{'permission'} = $permission;
+  $user->{'conn_type'} = $conn_type || 'plain';
   $user->{'new'} = defined($user->{'uid'}) ? 0 : 1;
   if ($user->{'new'}) {
     $user->{'join_time'} = time();
