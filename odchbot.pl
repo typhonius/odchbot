@@ -221,7 +221,8 @@ sub odch_hooks {
     foreach my $commandname (keys %{$DCBCommon::registry->{hooks}->{$hook}}) {
       my $command = $DCBCommon::registry->{commands}->{$commandname};
       ($command, $hook, $user, $params) = odch_alter($command, $hook, $user, $params);
-      push(@return, DCBCommon::commands_run_command($command, $hook, $user, $params));
+      my @result = DCBCommon::commands_run_command($command, $hook, $user, $params);
+      push(@return, grep { ref($_) eq 'HASH' } @result);
     }
     odch_respond(@return);
   }
@@ -244,6 +245,7 @@ sub odch_respond {
   my @return = @_;
 
   foreach (@return) {
+    next unless ref($_) eq 'HASH';
     if ($_->{param} eq "message") {
         odch_sendmessage($_->{user}, $_->{fromuser}, $_->{type}, $_->{message});
       }
