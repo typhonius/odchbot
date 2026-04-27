@@ -236,7 +236,7 @@ sub db_install {
         connect_share => { type => "INT", },
         permission => { type => "TINYINT" },
         ip => { type => "VARCHAR(18)", },
-        client => { type => "VARCHAR(20)", },
+        client => { type => "VARCHAR(255)", },
         disconnect_time => { type => "INT", },
       },
       watchdog => {
