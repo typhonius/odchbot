@@ -58,11 +58,10 @@ my $gateway = GatewayClient->new(
     api_key => $gw_config->{bot_api_key} || '',
 );
 
-# Register with gateway — only declare commands Dragon actually implements.
-# Gateway's built-in commands (tell, ban, history, stats, etc.) stay active.
+# Register with gateway — discover commands from handle_command dispatch
+# plus any loaded command modules. Gateway disables its built-in handlers
+# for commands Dragon claims.
 my $nick = $hub_config->{nick} || 'Dragon';
-$gateway->register($nick, 'coin', 'roll', 'time', 'magic_8ball', '8ball',
-                    'russianroulette', 'rr', 'lasercats');
 
 $logger->info("Registered with gateway as $nick");
 
@@ -92,6 +91,13 @@ if (-d $cmd_dir) {
     }
 }
 $logger->info("Loaded " . scalar(keys %commands) . " command modules");
+
+# Auto-discover commands: built-in handlers + loaded command modules
+my @dragon_commands = ('coin', 'roll', 'time', 'magic_8ball', '8ball',
+                       'russianroulette', 'rr', 'lasercats');
+push @dragon_commands, keys %commands;
+$gateway->register($nick, @dragon_commands);
+$logger->info("Registered with gateway as $nick, claiming " . scalar(@dragon_commands) . " commands");
 
 # -----------------------------------------------------------------------
 # Connect to hub
@@ -162,65 +168,48 @@ sub handle_chat {
     # Check for command prefix
     if ($message =~ /^!(\w+)\s*(.*)$/) {
         my ($cmd, $args) = ($1, $2 // '');
-        handle_command($from_nick, lc($cmd), $args);
+        my $response = handle_command_response($from_nick, lc($cmd), $args);
+        if ($response) {
+            $client->send_chat($response);
+        }
     }
 }
 
 sub handle_pm {
     my ($from_nick, $message) = @_;
-    # Dragon could handle PM commands here
     $logger->debug("PM from $from_nick: $message");
+
+    # Handle commands via PM (same as chat but reply via PM)
+    if ($message =~ /^!(\w+)\s*(.*)$/) {
+        my ($cmd, $args) = ($1, $2 // '');
+        my $response = handle_command_response($from_nick, lc($cmd), $args);
+        if ($response) {
+            $client->send_pm($from_nick, $response);
+        }
+    }
 }
 
 sub handle_join {
     my ($joined_nick) = @_;
     $logger->debug("User joined: $joined_nick");
-
-    # Deliver pending tells
-    eval {
-        my $tells = $gateway->get_pending_tells($joined_nick);
-        for my $tell (@$tells) {
-            my $from = $tell->{from_nick};
-            my $msg  = $tell->{message};
-            my $when = $tell->{created_at} || 'sometime';
-            $client->send_pm($joined_nick,
-                "Tell from $from ($when): $msg");
-            $gateway->mark_tell_delivered($tell->{id});
-        }
-    };
-    $logger->warn("Tell delivery error: $@") if $@;
-
-    # Notify watchers
-    eval {
-        my $watchers = $gateway->get_watchers($joined_nick);
-        for my $w (@$watchers) {
-            $client->send_pm($w->{watcher_nick},
-                "$joined_nick has logged in.");
-        }
-    };
+    # Tell delivery and watcher notifications are handled by the gateway
+    # event processor — Dragon doesn't need to do anything here.
 }
 
 sub handle_quit {
     my ($quit_nick) = @_;
     $logger->debug("User quit: $quit_nick");
-
-    # Notify watchers
-    eval {
-        my $watchers = $gateway->get_watchers($quit_nick);
-        for my $w (@$watchers) {
-            $client->send_pm($w->{watcher_nick},
-                "$quit_nick has logged out.");
-        }
-    };
+    # Watcher notifications handled by gateway event processor.
 }
 
-sub handle_command {
+sub handle_command_response {
     my ($from_nick, $cmd, $args) = @_;
 
     # Built-in Dragon commands (fun, external, personality)
+    # Returns response string, or undef if not a Dragon command.
     if ($cmd eq 'coin') {
         my @options = ('Heads!', 'Tails!');
-        $client->send_chat($options[int(rand(2))]);
+        return $options[int(rand(2))];
     }
     elsif ($cmd eq 'roll') {
         my ($count, $sides) = ($args =~ /^(\d+)?d(\d+)$/i);
@@ -229,11 +218,11 @@ sub handle_command {
         $sides = 1000 if $sides > 1000;
         my @rolls = map { int(rand($sides)) + 1 } 1..$count;
         my $total = 0; $total += $_ for @rolls;
-        $client->send_chat(sprintf("%s rolled %dd%d: %s (total: %d)",
-            $from_nick, $count, $sides, join(', ', @rolls), $total));
+        return sprintf("%s rolled %dd%d: %s (total: %d)",
+            $from_nick, $count, $sides, join(', ', @rolls), $total);
     }
     elsif ($cmd eq 'time') {
-        $client->send_chat(strftime("Current time: %Y-%m-%d %H:%M:%S UTC", gmtime));
+        return strftime("Current time: %Y-%m-%d %H:%M:%S UTC", gmtime);
     }
     elsif ($cmd eq 'magic_8ball' || $cmd eq '8ball') {
         my @answers = (
@@ -246,23 +235,44 @@ sub handle_command {
             "My reply is no.", "My sources say no.",
             "Outlook not so good.", "Very doubtful.",
         );
-        $client->send_chat($answers[int(rand(scalar @answers))]);
+        return $answers[int(rand(scalar @answers))];
     }
     elsif ($cmd eq 'russianroulette' || $cmd eq 'rr') {
         if (int(rand(6)) == 0) {
             $client->send_chat("*BANG* $from_nick is dead!");
+            # Kick the user (via gateway API moderation endpoint)
+            eval {
+                my $ua = $gateway->{ua};
+                my $url = "$gateway->{base_url}/api/v1/users/$from_nick/kick";
+                my $req = HTTP::Request->new(POST => $url);
+                $req->header('Content-Type' => 'application/json');
+                $req->header('X-API-Key' => $gateway->{api_key});
+                $req->content('{"reason":"Russian roulette"}');
+                $ua->request($req);
+            };
+            return undef; # already sent chat
         } else {
-            $client->send_chat("*click* $from_nick survives!");
+            return "*click* $from_nick survives!";
         }
     }
     elsif ($cmd eq 'lasercats') {
         $client->send_chat('  /\_/\  PEW PEW PEW');
         $client->send_chat(' ( o.o ) ----=======');
         $client->send_chat('  > ^ <');
+        # Kick the invoker (lasercats tradition!)
+        eval {
+            my $ua = $gateway->{ua};
+            my $url = "$gateway->{base_url}/api/v1/users/$from_nick/kick";
+            my $req = HTTP::Request->new(POST => $url);
+            $req->header('Content-Type' => 'application/json');
+            $req->header('X-API-Key' => $gateway->{api_key});
+            $req->content('{"reason":"LASERCATS PEW PEW PEW"}');
+            $ua->request($req);
+        };
+        return undef; # already sent chat
     }
     else {
-        # Unknown command — Dragon doesn't handle it
-        # (Gateway built-in commands will catch it instead)
         $logger->debug("Unknown Dragon command: $cmd");
+        return undef;
     }
 }
