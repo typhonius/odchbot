@@ -1,0 +1,15 @@
+---
+# OPChat — Standalone OP group chat bot
+# Copy to opchat.yml and edit.
+
+hub:
+  host: "127.0.0.1"
+  port: 4012
+  nick: OPChat
+  password: ""
+  description: "OP Group Chat"
+  email: "opchat@localhost"
+
+gateway:
+  url: "http://127.0.0.1:3000"
+  bot_api_key: "CHANGE_ME"

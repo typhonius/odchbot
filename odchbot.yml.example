@@ -1,0 +1,20 @@
+---
+# ODCHBot v4 — Standalone NMDC client bot
+# Copy to odchbot.yml and edit.
+
+hub:
+  host: "127.0.0.1"
+  port: 4012
+  nick: Dragon
+  password: ""
+  description: "I am Dragon, hear me RAWR"
+  email: "dragon@localhost"
+
+gateway:
+  url: "http://127.0.0.1:3000"
+  bot_api_key: "CHANGE_ME"
+
+config:
+  commandPath: commands_v4
+  debug: 0
+  timezone: Australia/Canberra
