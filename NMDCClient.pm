@@ -73,35 +73,47 @@ sub connect {
     $self->_send("\$Key $key|");
     $self->_send("\$ValidateNick $self->{nick}|");
 
-    # Read response — might be $Hello, $GetPass, or $ValidateDenide
-    my $response = $self->_read_message(5);
-    if (!$response) {
-        $logger->error("No response after ValidateNick");
-        $self->disconnect();
-        return 0;
-    }
+    # Read messages until we get $Hello, $GetPass, or $ValidateDenide.
+    # The hub may send $HubName, <Hub-Security> welcome, etc. first.
+    my $logged_in = 0;
+    my $attempts = 0;
+    while ($attempts < 20) {
+        my $response = $self->_read_message(5);
+        last unless defined $response;
+        $attempts++;
 
-    # Handle password request
-    if ($response =~ /\$GetPass/) {
-        if ($self->{password}) {
-            $self->_send("\$MyPass $self->{password}|");
-            $response = $self->_read_message(5);
-        } else {
-            $logger->error("Hub requires password but none configured");
+        if ($response =~ /\$GetPass/) {
+            if ($self->{password}) {
+                $self->_send("\$MyPass $self->{password}|");
+                # Continue reading for $Hello or $BadPass
+                next;
+            } else {
+                $logger->error("Hub requires password but none configured");
+                $self->disconnect();
+                return 0;
+            }
+        }
+        elsif ($response =~ /\$ValidateDenide/) {
+            $logger->error("Nick validation denied by hub");
             $self->disconnect();
             return 0;
         }
+        elsif ($response =~ /\$BadPass/) {
+            $logger->error("Bad password for $self->{nick}");
+            $self->disconnect();
+            return 0;
+        }
+        elsif ($response =~ /\$Hello\s+\Q$self->{nick}\E/) {
+            $logged_in = 1;
+            last;
+        }
+        # Ignore $HubName, <Hub-Security>, $Supports, $NickList, etc.
     }
 
-    if ($response =~ /\$ValidateDenide/) {
-        $logger->error("Nick validation denied by hub");
+    unless ($logged_in) {
+        $logger->error("Login failed after $attempts messages");
         $self->disconnect();
         return 0;
-    }
-
-    # Should have $Hello at this point (possibly in the response)
-    unless ($response =~ /\$Hello\s+\Q$self->{nick}\E/) {
-        $logger->warn("Expected \$Hello, got: $response (continuing anyway)");
     }
 
     # Send our info
