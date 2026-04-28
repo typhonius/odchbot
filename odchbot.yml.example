@@ -1,31 +1,23 @@
 ---
+# Dragon v4.0.0 — Standalone NMDC client bot
+# Connects to hub as a regular DC user, calls Gateway API for data.
+
+# Hub connection (NMDC client)
+hub:
+  host: "127.0.0.1"
+  port: 4012
+  nick: Dragon
+  password: ""
+  description: "I am Dragon, hear me RAWR"
+  email: "dragon@localhost"
+
+# Gateway API connection
+gateway:
+  url: "http://127.0.0.1:3000"
+  bot_api_key: "CHANGE_ME_your_bot_api_key"
+
+# Bot settings
 config:
-  allow_anon: 1
-  allow_external: 1
-  allow_passive: 1
-  botdescription: I am Dragon, hear me RAWR
-  botemail: dragon@localhost
-  botname: Dragon
-  botshare: 136571
-  botspeed: LAN(T1)
-  bottag: RAWRDC++
   commandPath: commands
-  cp: "-"
-  db:
-    database: odchbot.db
-    driver: SQLite
-    host: ''
-    password: ''
-    path: logs
-    port: ''
-    username: ''
   debug: 0
-  hubname: OpenDCHub ChatHub
-  hubname_short: ODCH
-  maintainer_email: odchbot@gmail.com
-  min_username: 3
-  minshare: '5368709120'
-  no_perms: You do not have adequate permissions to use this function!
   timezone: Australia/Canberra
-  username_anonymous: Anonymous
-  username_max_length: 35
