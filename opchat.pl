@@ -1,184 +1,155 @@
 #!/usr/bin/perl
 
 #--------------------------
-# OPChat - Extendable, Hookable, Plugable
+# OPChat — Standalone NMDC OP Group Chat Bot
 #
-# If in doubt, read the README
+# Connects to the hub as "OPChat". Operators PM this bot to talk
+# in a private group chat visible only to other ops.
+# Messages sent to OPChat are relayed to all other ops on the hub.
 #--------------------------
+
 use strict;
 use warnings;
-
-use Time::HiRes qw(gettimeofday tv_interval);
-my $start_time = [gettimeofday()];
-use Text::Tabs;
 use FindBin;
 use lib "$FindBin::Bin";
 use Log::Log4perl qw(:levels);
+use JSON;
 
-use DCBCommon;
-use DCBSettings;
-use DCBUser;
+use NMDCClient;
+use GatewayClient;
 
-our $VERSION = '1.0.0';
+our $VERSION = '4.0.0';
 
-# Enable the logger and load configuration.
-# Read config and resolve relative paths against the script's directory so
-# the embedded Perl inside opendchub works regardless of the hub's CWD.
+# -----------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------
 {
-  open my $fh, '<', "$FindBin::Bin/opchat.log4perl.conf"
-    or die "Cannot open $FindBin::Bin/opchat.log4perl.conf: $!";
-  my $conf = do { local $/; <$fh> };
-  close $fh;
-  $conf =~ s{^(log4perl\.appender\.\w+\.filename=)(?!/)(.+)$}{$1$FindBin::Bin/$2}mg;
-  Log::Log4perl->init(\$conf);
+    my $conf_file = "$FindBin::Bin/opchat.log4perl.conf";
+    if (-f $conf_file) {
+        open my $fh, '<', $conf_file or die "Cannot open $conf_file: $!";
+        my $conf = do { local $/; <$fh> };
+        close $fh;
+        $conf =~ s{^(log4perl\.appender\.\w+\.filename=)(?!/)(.+)$}{$1$FindBin::Bin/$2}mg;
+        Log::Log4perl->init(\$conf);
+    } else {
+        Log::Log4perl->easy_init($INFO);
+    }
 }
 my $logger = Log::Log4perl->get_logger('OPChat');
+$logger->info("OPChat v$VERSION starting");
 
-my $oplist = {};
-
+# -----------------------------------------------------------------------
+# Config
+# -----------------------------------------------------------------------
+my $config;
 eval {
-  our $Settings = DCBSettings->new();
-  $Settings->config_init('opchat.yml');
-
-  if ($DCBSettings::config->{debug}) {
-    $logger->level($DEBUG);
-    $logger->debug("Debug mode enabled.");
-  }
+    require YAML::AppConfig;
+    my $config_file = "$FindBin::Bin/opchat.yml";
+    die "Config not found: $config_file\n" unless -f $config_file;
+    my $app_config = YAML::AppConfig->new(file => $config_file);
+    $config = $app_config->config();
 };
 if ($@) {
-  $logger->error($@);
-  die;
+    $logger->error("Config load failed: $@");
+    die $@;
 }
 
-sub main {
-  our $c = DCBCommon::common_escape_string("$DCBSettings::config->{cp}");
-  odch::register_script_name($DCBSettings::config->{botname});
-  my $loadtime = tv_interval ( $start_time ) ;
-  $logger->debug("$DCBSettings::config->{botname} version $VERSION - loaded in $loadtime seconds!");
+my $hub_config = $config->{hub} || {};
+my $gw_config  = $config->{gateway} || {};
+my $nick = $hub_config->{nick} || 'OPChat';
+
+# -----------------------------------------------------------------------
+# Gateway client
+# -----------------------------------------------------------------------
+my $gateway = GatewayClient->new(
+    url     => $gw_config->{url} || 'http://127.0.0.1:3000',
+    api_key => $gw_config->{bot_api_key} || '',
+);
+
+# -----------------------------------------------------------------------
+# Hub connection
+# -----------------------------------------------------------------------
+my $client;
+
+sub create_client {
+    $client = NMDCClient->new(
+        host        => $hub_config->{host} || '127.0.0.1',
+        port        => $hub_config->{port} || 4012,
+        nick        => $nick,
+        password    => $hub_config->{password} || '',
+        description => $hub_config->{description} || 'OP Group Chat',
+        email       => $hub_config->{email} || 'opchat@dc.glo5.com',
+        tag         => "<opchat V:$VERSION>",
+        speed       => 'LAN(T1)',
+
+        on_pm   => sub { handle_pm(@_) },
+        on_chat => sub { },
+        on_join => sub { },
+        on_quit => sub { },
+    );
 }
 
-sub data_arrival {
-  my ($name, $data) = @_;
-  my $botname = $DCBSettings::config->{botname};
-  $data =~ s/[\r\n]+/ /g;
-  # matches PM
-  if ($data =~ /^\$To:\s\Q$botname\E\sFrom:\s$name\s\$\<\Q$name\E\>\s(.*)\|/) {
-    my $chat = $1;
-    my $user = $oplist->{lc($name)};
-    opchat_sendtoopchat($name, $chat);
-    if ($chat =~ /^(?:$::c)add\s?(\S+)/ && $user && user_is_admin($user)) {
-      my @chatarray = split(/\s+/, $1);
-      my $invitee = shift(@chatarray);
-      if (lc($invitee) eq lc($botname)) {
-        opchat_sendtoopchat($botname, "Cannot add the bot to chat.");
-      }
-      elsif ($oplist->{lc($invitee)}) {
-        opchat_sendtoopchat($botname, "$invitee is already in chat.");
-      }
-      else {
-        my %user = (
-          'name' => $invitee,
-          'permission' => PERMISSIONS->{AUTHENTICATED},
-        );
-        $oplist->{lc($invitee)} = \%user;
-        $logger->debug("Added $invitee to oplist.");
-        opchat_sendtoopchat($botname, "Added $invitee to chat!");
-      }
-    }
-    elsif ($chat =~ /^(?:$::c)remove\s?(\S+)/ && $user && user_is_admin($user)) {
-      my @chatarray = split(/\s+/, $1);
-      my $rejectee = shift(@chatarray);
-      if ($oplist->{lc($rejectee)}) {
-        if (!user_is_admin($oplist->{lc($rejectee)})) {
-          delete $oplist->{lc($rejectee)};
-          $logger->debug("Removed $rejectee from oplist.");
-          opchat_sendtoopchat($botname, "Removed $rejectee from chat!");
+# -----------------------------------------------------------------------
+# Main loop
+# -----------------------------------------------------------------------
+my $reconnect_delay = 5;
+create_client();
+
+while (1) {
+    if ($client->connect()) {
+        $reconnect_delay = 5;
+        $logger->info("Connected as $nick");
+
+        while ($client->is_connected()) {
+            $client->poll(500);
         }
-      }
+        $logger->warn("Disconnected");
+    } else {
+        $logger->error("Failed to connect");
     }
-    elsif ($chat =~ /^(?:$::c)list$/ && $user && user_is_admin($user)) {
-      my %permissions;
-      foreach my $key (sort keys %{+PERMISSIONS}) {
-        $permissions{PERMISSIONS->{$key}} = $key;
-      }
-      my $message = "List of users in this chat\n";
-      foreach my $op (keys %{$oplist}) {
-        $message .= "[$permissions{$oplist->{$op}->{permission}}] $op\n";
-      }
-      opchat_sendtoopchat($botname, $message);
+
+    $logger->info("Reconnecting in ${reconnect_delay}s...");
+    sleep($reconnect_delay);
+    $reconnect_delay = ($reconnect_delay * 2 > 300) ? 300 : $reconnect_delay * 2;
+    create_client();
+}
+
+# -----------------------------------------------------------------------
+# PM handler — relay to all other ops
+# -----------------------------------------------------------------------
+
+sub handle_pm {
+    my ($from_nick, $message) = @_;
+    $logger->info("OP message from $from_nick: $message");
+    relay_to_ops("<$from_nick> $message", $from_nick);
+}
+
+sub get_online_ops {
+    my @ops;
+    eval {
+        my $ua = $gateway->{ua};
+        my $url = "$gateway->{base_url}/api/v1/users";
+        my $req = HTTP::Request->new(GET => $url);
+        $req->header('X-API-Key' => $gateway->{api_key});
+        my $res = $ua->request($req);
+        if ($res->is_success) {
+            my $data = decode_json($res->decoded_content);
+            for my $user (@{$data->{users} || []}) {
+                push @ops, $user->{nick} if $user->{is_op};
+            }
+        }
+    };
+    $logger->warn("Failed to get ops: $@") if $@;
+    return @ops;
+}
+
+sub relay_to_ops {
+    my ($message, $exclude_nick) = @_;
+    my @ops = get_online_ops();
+
+    for my $op (@ops) {
+        next if defined $exclude_nick && $op eq $exclude_nick;
+        next if $op eq $nick;
+        $client->send_pm($op, $message);
     }
-    elsif ($chat =~ /^(?:$::c)commands$/ && $user && user_is_admin($user)) {
-      my $message = "$botname commands:\n";
-      $message .= "-add: Adds a user to this chat. Usage -add <username>\n";
-      $message .= "-remove: Removes a user from this chat. Usage -remove <username>\n";
-      $message .= "-list: Shows the list of users in this chat.\n";
-      $message .= "-commands: Shows these commands.\n";
-      opchat_sendtoopchat($botname, $message);
-    }
-  }
 }
-
-sub op_admin_connected {
-  my ($user) = @_;
-  $logger->debug("$user connected as admin");
-  opchat_login($user, PERMISSIONS->{ADMINISTRATOR});
-}
-sub op_connected {
-  my ($user) = @_;
-  $logger->debug("$user connected as op");
-  opchat_login($user, PERMISSIONS->{OPERATOR});
-}
-sub reg_user_connected {
-  my ($user) = @_;
-  $logger->debug("$user connected as registered user");
-  opchat_login($user, PERMISSIONS->{AUTHENTICATED});
-}
-sub new_user_connected {
-  my ($user) = @_;
-  $logger->debug("$user connected as new user");
-  opchat_login($user, PERMISSIONS->{ANONYMOUS});
-}
-sub user_disconnected {
-  my ($name) = @_;
-  $logger->debug("$name disconnected.");
-  delete $oplist->{lc($name)};
-}
-
-sub opchat_login {
-  my ($name, $permission) = @_;
-
-  my %user = (
-    'name' => $name,
-    'permission' => $permission,
-  );
-  if (user_is_admin(\%user)) {
-    $logger->debug("Automatically adding $name to oplist.");
-    $oplist->{lc($name)} = \%user;
-  }
-
-  my $tag = "$DCBSettings::config->{bottag} V:$VERSION,M:P,H:1/3/3,S:7";
-  my $botmessage = "\$MyINFO \$ALL $DCBSettings::config->{botname} " .
-    "$DCBSettings::config->{botdescription}<$tag>\$\$\$$DCBSettings::config->{botspeed}>" .
-    "\$$DCBSettings::config->{botemail}\$$DCBSettings::config->{botshare}\$";
-  odch::data_to_user($name, $botmessage."|");
-}
-
-sub opchat_sendtoopchat {
-  my ($name, $message) = @_;
-  $message =~ s/\r?\n/\r\n/g;
-  $message =~ s/\|/&#124;/g;
-  $message = expand($message);
-  my $botname = $DCBSettings::config->{botname};
-  if ($name eq $botname || ($oplist->{lc($name)} && $oplist->{lc($name)}->{name} eq $name)) {
-    foreach my $op (keys %{$oplist}) {
-      unless (lc($name) eq $op) {
-        my $real_nick = $oplist->{$op}->{name};
-        odch::data_to_user($real_nick, "\$To: $real_nick From: $botname \$<$name> $message|");
-      }
-    }
-  }
-}
-
-# Exit cleanly for CI boot test
-
-exit 0;
