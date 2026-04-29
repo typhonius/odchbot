@@ -1,42 +1,83 @@
-# ODCHBot v4
+# ODCHBot
 
-Standalone NMDC client bots for OpenDCHub. Connects to the hub as a regular DC user, appears in the user list, and calls the [odch-gateway](https://github.com/typhonius/odch-gateway) API for all data operations.
+Gateway-only bots for [OpenDCHub](https://github.com/typhonius/opendchub). No NMDC connection — bots register with the [gateway](https://github.com/typhonius/odch-gateway) API which creates virtual users on the hub. Commands arrive via SSE, responses go via HTTP.
 
-## Components
+## Bots
 
-- **odchbot.pl** — Main bot (Dragon). Fun commands, external integrations, custom plugins.
-- **opchat.pl** — OP group chat. PMs to this bot are relayed to all online operators.
-- **NMDCClient.pm** — NMDC protocol client (Lock/Key, chat, PM, join/quit events).
-- **GatewayClient.pm** — HTTP client for the gateway bot API.
-- **commands_v4/** — Modular command plugins (coin, roll, 8ball, etc.)
+- **odchbot.pl** (Dragon) — Hub mascot. Fun commands: `!coin`, `!roll`, `!8ball`, `!lasercats`, `!rr`, `!time`
+- **opchat.pl** (OPChat) — OP group chat relay. PMs to OPChat are forwarded to all online operators.
 
 ## Setup
 
 ```bash
-cp odchbot.yml.example odchbot.yml   # edit hub/gateway settings
-cp opchat.yml.example opchat.yml     # edit hub/gateway settings
+cp odchbot.yml.example odchbot.yml   # edit gateway URL + API key
+cp opchat.yml.example opchat.yml     # edit gateway URL + API key
 mkdir -p logs
-perl odchbot.pl                       # start the bot
-perl opchat.pl                        # start OP chat (optional)
+perl odchbot.pl                       # Dragon appears in hub user list
+perl opchat.pl                        # OPChat appears in hub user list
 ```
 
 ## Requirements
 
 - Perl 5.20+
-- LWP::UserAgent, JSON, YAML::AppConfig, Log::Log4perl, IO::Select
+- LWP::UserAgent, HTTP::Tiny, JSON, YAML::AppConfig, Log::Log4perl
 
 ## Architecture
 
-ODCHBot v4 is a standalone process. It does NOT run inside the hub's embedded Perl (that was v3).
-
 ```
-Hub (NMDC) ←──── odchbot.pl (NMDC client)
-                      │
-                      ▼
-               odch-gateway (HTTP API for data)
-                      │
-                      ▼
-                  PostgreSQL
+odchbot.pl ──→ odch-gateway ──→ opendchub ←→ DC Clients
+  (HTTP)        (virtual user)    (NMDC)
 ```
 
-The gateway handles core commands (ban, tell, history, stats). The bot handles fun/personality commands (coin, roll, 8ball, lasercats) and custom plugins.
+Bots only talk HTTP. The gateway creates virtual users on the hub so bots appear in the user list. Commands are delivered via Server-Sent Events (SSE), responses sent via the chat/PM API.
+
+## Writing a New Command
+
+Drop a `.pm` file in `commands/`:
+
+```perl
+package commands::hello;
+use strict; use warnings;
+
+sub name { 'hello' }
+sub aliases { ('hi', 'hey') }
+sub help { '!hello — Say hello' }
+
+sub run {
+    my ($from_nick, $args, $gateway) = @_;
+    return "Hello $from_nick!";
+}
+
+1;
+```
+
+Restart the bot. The new command is auto-discovered and registered with the gateway.
+
+## Config
+
+```yaml
+bot:
+  nick: Dragon
+  description: "I am Dragon, hear me RAWR"
+  email: "dragon@dc.glo5.com"
+  tag: "<odchbot V:4.0.0>"
+
+gateway:
+  url: "http://127.0.0.1:3000"
+  api_key: "YOUR_API_KEY"
+```
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| odchbot.pl | Dragon bot — fun commands |
+| opchat.pl | OPChat — OP PM relay |
+| GatewayClient.pm | HTTP client for gateway bot platform API |
+| NMDCClient.pm | Legacy NMDC client (unused in v4, kept for reference) |
+| commands/*.pm | Command plugins (auto-discovered) |
+
+## Related
+
+- [odch-gateway](https://github.com/typhonius/odch-gateway) — Gateway + bot platform
+- [opendchub](https://github.com/typhonius/opendchub) — NMDC hub server
