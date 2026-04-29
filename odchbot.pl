@@ -17,7 +17,7 @@ use Log::Log4perl qw(:levels);
 
 use GatewayClient;
 
-our $VERSION = '5.0.0';
+our $VERSION = '4.0.0';
 
 # -----------------------------------------------------------------------
 # Initialize logging

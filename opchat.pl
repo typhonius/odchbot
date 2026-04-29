@@ -17,7 +17,7 @@ use JSON;
 
 use GatewayClient;
 
-our $VERSION = '5.0.0';
+our $VERSION = '4.0.0';
 
 # -----------------------------------------------------------------------
 # Initialize logging
