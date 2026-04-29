@@ -1,4 +1,4 @@
-package commands_v4::magic_8ball;
+package commands::magic_8ball;
 use strict; use warnings;
 
 sub name { 'magic_8ball' }
@@ -17,7 +17,7 @@ my @ANSWERS = (
 );
 
 sub run {
-    my ($from_nick, $args, $client, $gateway) = @_;
+    my ($from_nick, $args, $gateway) = @_;
     return $ANSWERS[int(rand(scalar @ANSWERS))];
 }
 

@@ -1,4 +1,4 @@
-package commands_v4::time;
+package commands::time;
 use strict; use warnings;
 use POSIX qw(strftime);
 
@@ -7,7 +7,7 @@ sub aliases { () }
 sub help { '!time — Show current UTC time' }
 
 sub run {
-    my ($from_nick, $args, $client, $gateway) = @_;
+    my ($from_nick, $args, $gateway) = @_;
     return strftime("Current time: %Y-%m-%d %H:%M:%S UTC", gmtime);
 }
 

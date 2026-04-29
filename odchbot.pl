@@ -1,24 +1,23 @@
 #!/usr/bin/perl
 
 #--------------------------
-# ODCHBot v4 — Standalone NMDC Client Bot
+# ODCHBot v5 — Gateway-only Bot Client
 #
-# Connects to the hub as a regular DC user.
-# Appears in the user list. Calls Gateway API for data.
-# Commands live in commands_v4/ as separate .pm modules.
+# Registers as a virtual user via the gateway API.
+# No NMDC connection — the gateway creates a virtual hub user.
+# Commands live in commands/ as separate .pm modules.
 #--------------------------
 
 use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin";
-use lib "$FindBin::Bin/commands_v4";
+use lib "$FindBin::Bin/commands";
 use Log::Log4perl qw(:levels);
 
-use NMDCClient;
 use GatewayClient;
 
-our $VERSION = '4.0.0';
+our $VERSION = '5.0.0';
 
 # -----------------------------------------------------------------------
 # Initialize logging
@@ -54,31 +53,34 @@ if ($@) {
     die $@;
 }
 
-my $hub_config = $config->{hub} || {};
+my $bot_config = $config->{bot} || {};
 my $gw_config  = $config->{gateway} || {};
-my $nick = $hub_config->{nick} || 'Dragon';
+my $nick        = $bot_config->{nick}        || 'Dragon';
+my $description = $bot_config->{description} || 'Hub Bot';
+my $email       = $bot_config->{email}       || '';
+my $tag         = $bot_config->{tag}         || "<odchbot V:$VERSION>";
 
 # -----------------------------------------------------------------------
 # Initialize Gateway client
 # -----------------------------------------------------------------------
 my $gateway = GatewayClient->new(
     url     => $gw_config->{url} || 'http://127.0.0.1:3000',
-    api_key => $gw_config->{bot_api_key} || '',
+    api_key => $gw_config->{api_key} || '',
 );
 
 # -----------------------------------------------------------------------
-# Load command modules from commands_v4/
+# Load command modules from commands/
 # -----------------------------------------------------------------------
 my %commands;    # name => module package
 my %aliases;     # alias => name
 
-my $cmd_dir = "$FindBin::Bin/commands_v4";
+my $cmd_dir = "$FindBin::Bin/commands";
 if (-d $cmd_dir) {
     opendir(my $dh, $cmd_dir) or $logger->warn("Cannot open $cmd_dir: $!");
     if ($dh) {
         for my $file (sort readdir $dh) {
             next unless $file =~ /^(\w+)\.pm$/;
-            my $modname = "commands_v4::$1";
+            my $modname = "commands::$1";
             eval { require "$cmd_dir/$file"; };
             if ($@) {
                 $logger->warn("Failed to load command $1: $@");
@@ -98,93 +100,63 @@ if (-d $cmd_dir) {
 }
 $logger->info("Loaded " . scalar(keys %commands) . " commands: " . join(', ', sort keys %commands));
 
-# Register with gateway — declare all commands Dragon handles
+# -----------------------------------------------------------------------
+# Register with gateway — declare bot identity and commands
+# -----------------------------------------------------------------------
 my @all_cmds = (keys %commands, keys %aliases);
-$gateway->register($nick, @all_cmds);
+$gateway->register($nick, $description, $email, $tag, @all_cmds);
 $logger->info("Registered with gateway as $nick, claiming " . scalar(@all_cmds) . " commands");
 
 # -----------------------------------------------------------------------
-# Connect to hub
+# Shutdown handler — unregister on exit
 # -----------------------------------------------------------------------
-my $client;
+my $running = 1;
 
-sub create_client {
-    $client = NMDCClient->new(
-        host        => $hub_config->{host} || '127.0.0.1',
-        port        => $hub_config->{port} || 4012,
-        nick        => $nick,
-        password    => $hub_config->{password} || '',
-        description => $hub_config->{description} || 'Hub Bot',
-        email       => $hub_config->{email} || '',
-        tag         => "<odchbot V:$VERSION>",
-        speed       => 'LAN(T1)',
+$SIG{INT} = $SIG{TERM} = sub {
+    $logger->info("Caught signal, shutting down...");
+    $running = 0;
+};
 
-        on_chat => sub { handle_chat(@_) },
-        on_pm   => sub { handle_pm(@_) },
-        on_join => sub { handle_join(@_) },
-        on_quit => sub { handle_quit(@_) },
-    );
+END {
+    if (defined $gateway && defined $nick) {
+        $logger->info("Unregistering $nick from gateway");
+        eval { $gateway->unregister($nick) };
+    }
 }
 
 # -----------------------------------------------------------------------
-# Main loop with reconnect
+# Main loop — SSE event stream with reconnect
 # -----------------------------------------------------------------------
-my $reconnect_delay = 5;
-create_client();
+my $reconnect_delay = 2;
 
-while (1) {
-    if ($client->connect()) {
-        $reconnect_delay = 5;
-        $logger->info("Connected and logged in as $nick");
+while ($running) {
+    $logger->info("Connecting to gateway event stream...");
 
-        while ($client->is_connected()) {
-            $client->poll(500);
-        }
-        $logger->warn("Disconnected from hub");
-    } else {
-        $logger->error("Failed to connect to hub");
-    }
+    eval {
+        $gateway->event_stream($nick, sub {
+            my ($cmd_event) = @_;
+            my $from = $cmd_event->{from_nick} // '';
+            my $cmd  = $cmd_event->{command} // '';
+            my $args = $cmd_event->{args} // '';
 
-    $logger->info("Reconnecting in ${reconnect_delay}s...");
+            $logger->debug("Command from $from: !$cmd $args");
+
+            my $response = dispatch_command($from, $cmd, $args);
+            if (defined $response) {
+                $gateway->send_chat($nick, $response);
+            }
+        });
+    };
+
+    last unless $running;
+
+    # event_stream returns when the connection drops
+    $logger->warn("Event stream disconnected, reconnecting in ${reconnect_delay}s...");
     sleep($reconnect_delay);
-    $reconnect_delay = ($reconnect_delay * 2 > 300) ? 300 : $reconnect_delay * 2;
-    create_client();
+    $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
 }
 
-# -----------------------------------------------------------------------
-# Event handlers
-# -----------------------------------------------------------------------
-
-sub handle_chat {
-    my ($from_nick, $message) = @_;
-    if ($message =~ /^!(\w+)\s*(.*)$/) {
-        my ($cmd, $args) = (lc($1), $2 // '');
-        my $response = dispatch_command($from_nick, $cmd, $args);
-        $client->send_chat($response) if defined $response;
-    }
-}
-
-sub handle_pm {
-    my ($from_nick, $message) = @_;
-    $logger->debug("PM from $from_nick: $message");
-    if ($message =~ /^!(\w+)\s*(.*)$/) {
-        my ($cmd, $args) = (lc($1), $2 // '');
-        my $response = dispatch_command($from_nick, $cmd, $args);
-        $client->send_pm($from_nick, $response) if defined $response;
-    }
-}
-
-sub handle_join {
-    my ($joined_nick) = @_;
-    $logger->debug("User joined: $joined_nick");
-    # Tell delivery and watcher notifications handled by gateway event processor
-}
-
-sub handle_quit {
-    my ($quit_nick) = @_;
-    $logger->debug("User quit: $quit_nick");
-    # Watcher notifications handled by gateway event processor
-}
+$logger->info("Main loop exited, shutting down");
 
 # -----------------------------------------------------------------------
 # Command dispatch
@@ -200,7 +172,7 @@ sub dispatch_command {
     my $module = $commands{$cmd};
     return undef unless $module;
 
-    my $response = eval { $module->run($from_nick, $args, $client, $gateway) };
+    my $response = eval { $module->run($from_nick, $args, $gateway) };
     if ($@) {
         $logger->warn("Command $cmd error: $@");
         return "Error running !$cmd";

@@ -1,9 +1,8 @@
 package GatewayClient;
 
-# HTTP client for the odch-gateway Bot API.
-# Provides bot registration and key-value storage for plugins.
-# Core data operations (tells, bans, gags, watches, stats) are
-# handled by the gateway's built-in command engine — not the bot.
+# HTTP client for the odch-gateway Bot Platform API.
+# Provides bot registration, command polling, chat, and key-value storage.
+# The bot registers as a virtual user — no NMDC connection needed.
 
 use strict;
 use warnings;
@@ -24,41 +23,22 @@ sub new {
     return $self;
 }
 
-sub _get {
-    my ($self, $path) = @_;
-    my $url = "$self->{base_url}/api/v1/bot$path";
-    my $req = HTTP::Request->new(GET => $url);
+sub _request {
+    my ($self, $method, $prefix, $path, $body) = @_;
+    my $url = "$self->{base_url}/api/v1$prefix$path";
+    my $req = HTTP::Request->new($method => $url);
     $req->header('X-API-Key' => $self->{api_key});
+    if ($body) {
+        $req->header('Content-Type' => 'application/json');
+        $req->content(encode_json($body));
+    }
     return _parse_response($self->{ua}->request($req), $url);
 }
 
-sub _post {
-    my ($self, $path, $body) = @_;
-    my $url = "$self->{base_url}/api/v1/bot$path";
-    my $req = HTTP::Request->new(POST => $url);
-    $req->header('Content-Type' => 'application/json');
-    $req->header('X-API-Key' => $self->{api_key});
-    $req->content(encode_json($body || {}));
-    return _parse_response($self->{ua}->request($req), $url);
-}
-
-sub _put {
-    my ($self, $path, $body) = @_;
-    my $url = "$self->{base_url}/api/v1/bot$path";
-    my $req = HTTP::Request->new(PUT => $url);
-    $req->header('Content-Type' => 'application/json');
-    $req->header('X-API-Key' => $self->{api_key});
-    $req->content(encode_json($body || {}));
-    return _parse_response($self->{ua}->request($req), $url);
-}
-
-sub _delete {
-    my ($self, $path) = @_;
-    my $url = "$self->{base_url}/api/v1/bot$path";
-    my $req = HTTP::Request->new(DELETE => $url);
-    $req->header('X-API-Key' => $self->{api_key});
-    return _parse_response($self->{ua}->request($req), $url);
-}
+sub _get    { my ($self, $path) = @_;        $self->_request('GET',    '/bot', $path) }
+sub _post   { my ($self, $path, $body) = @_; $self->_request('POST',   '/bot', $path, $body || {}) }
+sub _put    { my ($self, $path, $body) = @_; $self->_request('PUT',    '/bot', $path, $body || {}) }
+sub _delete { my ($self, $path, $body) = @_; $self->_request('DELETE', '/bot', $path, $body) }
 
 sub _parse_response {
     my ($res, $url) = @_;
@@ -74,21 +54,105 @@ sub _parse_response {
     return $data;
 }
 
-# Bot registration — tell the gateway which commands this bot handles
+# -----------------------------------------------------------------------
+# Bot Platform API
+# -----------------------------------------------------------------------
+
+# Register bot with gateway — creates a virtual user on the hub
 sub register {
-    my ($self, $nick, @commands) = @_;
+    my ($self, $nick, $description, $email, $tag, @commands) = @_;
     return $self->_post('/register', {
-        nick     => $nick,
-        commands => \@commands,
+        nick        => $nick,
+        description => $description,
+        email       => $email,
+        tag         => $tag,
+        commands    => \@commands,
     });
 }
 
+# Unregister bot — removes the virtual user
 sub unregister {
-    my ($self) = @_;
-    return $self->_delete('/register');
+    my ($self, $nick) = @_;
+    return $self->_delete('/register', { nick => $nick });
 }
 
+# Poll for pending commands dispatched to this bot
+sub poll_commands {
+    my ($self, $nick) = @_;
+    return $self->_get("/commands/pending?nick=$nick");
+}
+
+# Connect to SSE event stream for real-time command delivery.
+# Calls $on_command->($cmd_hashref) for each command event.
+# Blocks until the connection drops; caller should reconnect.
+sub event_stream {
+    my ($self, $nick, $on_command) = @_;
+    require HTTP::Tiny;
+    my $http = HTTP::Tiny->new(timeout => 0);
+    my $url = "$self->{base_url}/api/v1/bot/events?nick=$nick";
+    my $buf = '';
+
+    $http->request('GET', $url, {
+        headers => {
+            'X-API-Key' => $self->{api_key},
+            'Accept'    => 'text/event-stream',
+        },
+        data_callback => sub {
+            my ($chunk) = @_;
+            $buf .= $chunk;
+            while ($buf =~ s/^(.*?\n\n)//s) {
+                my $block = $1;
+                my ($event, $data);
+                for my $line (split /\n/, $block) {
+                    if ($line =~ /^event:\s*(.+)/) { $event = $1; }
+                    elsif ($line =~ /^data:\s*(.+)/) { $data = $1; }
+                }
+                if (defined $event && $event eq 'command' && defined $data) {
+                    my $cmd = eval { decode_json($data) };
+                    $on_command->($cmd) if $cmd && !$@;
+                }
+            }
+        },
+    });
+}
+
+# Send a chat message as the bot
+sub send_chat {
+    my ($self, $nick, $message) = @_;
+    return $self->_post('/chat', {
+        nick    => $nick,
+        message => $message,
+    });
+}
+
+# Send a private message as a bot
+sub send_pm {
+    my ($self, $from, $to, $message) = @_;
+    return $self->_post('/pm', {
+        from    => $from,
+        to      => $to,
+        message => $message,
+    });
+}
+
+# -----------------------------------------------------------------------
+# Hub API — users and moderation (main API, not bot prefix)
+# -----------------------------------------------------------------------
+
+sub get_users {
+    my ($self) = @_;
+    return $self->_request('GET', '', '/users');
+}
+
+sub kick_user {
+    my ($self, $nick, $reason) = @_;
+    return $self->_request('POST', '', "/users/$nick/kick", { reason => $reason || '' });
+}
+
+# -----------------------------------------------------------------------
 # Key-value storage — for plugin config and custom data
+# -----------------------------------------------------------------------
+
 sub get_data {
     my ($self, $namespace, $key) = @_;
     my $data = $self->_get("/data/$namespace/$key");

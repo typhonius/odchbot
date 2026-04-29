@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 
 #--------------------------
-# OPChat — Standalone NMDC OP Group Chat Bot
+# OPChat v5 — Gateway-only OP Group Chat Bot
 #
-# Connects to the hub as "OPChat". Operators PM this bot to talk
-# in a private group chat visible only to other ops.
-# Messages sent to OPChat are relayed to all other ops on the hub.
+# Registers as a virtual user via the gateway API.
+# No NMDC connection — the gateway creates a virtual hub user.
+# Receives PMs via SSE and relays them between operators.
 #--------------------------
 
 use strict;
@@ -15,13 +15,12 @@ use lib "$FindBin::Bin";
 use Log::Log4perl qw(:levels);
 use JSON;
 
-use NMDCClient;
 use GatewayClient;
 
-our $VERSION = '4.0.0';
+our $VERSION = '5.0.0';
 
 # -----------------------------------------------------------------------
-# Logging
+# Initialize logging
 # -----------------------------------------------------------------------
 {
     my $conf_file = "$FindBin::Bin/opchat.log4perl.conf";
@@ -39,7 +38,7 @@ my $logger = Log::Log4perl->get_logger('OPChat');
 $logger->info("OPChat v$VERSION starting");
 
 # -----------------------------------------------------------------------
-# Config
+# Load config
 # -----------------------------------------------------------------------
 my $config;
 eval {
@@ -54,102 +53,91 @@ if ($@) {
     die $@;
 }
 
-my $hub_config = $config->{hub} || {};
+my $bot_config = $config->{bot} || {};
 my $gw_config  = $config->{gateway} || {};
-my $nick = $hub_config->{nick} || 'OPChat';
+my $nick        = $bot_config->{nick}        || 'OPChat';
+my $description = $bot_config->{description} || 'OP Group Chat';
+my $email       = $bot_config->{email}       || 'opchat@dc.glo5.com';
+my $tag         = $bot_config->{tag}         || "<opchat V:$VERSION>";
 
 # -----------------------------------------------------------------------
-# Gateway client
+# Initialize Gateway client
 # -----------------------------------------------------------------------
 my $gateway = GatewayClient->new(
     url     => $gw_config->{url} || 'http://127.0.0.1:3000',
-    api_key => $gw_config->{bot_api_key} || '',
+    api_key => $gw_config->{api_key} || '',
 );
 
 # -----------------------------------------------------------------------
-# Hub connection
+# Register with gateway — no commands (OPChat only receives PMs)
 # -----------------------------------------------------------------------
-my $client;
-
-sub create_client {
-    $client = NMDCClient->new(
-        host        => $hub_config->{host} || '127.0.0.1',
-        port        => $hub_config->{port} || 4012,
-        nick        => $nick,
-        password    => $hub_config->{password} || '',
-        description => $hub_config->{description} || 'OP Group Chat',
-        email       => $hub_config->{email} || 'opchat@dc.glo5.com',
-        tag         => "<opchat V:$VERSION>",
-        speed       => 'LAN(T1)',
-
-        on_pm   => sub { handle_pm(@_) },
-        on_chat => sub { },
-        on_join => sub { },
-        on_quit => sub { },
-    );
-}
+$gateway->register($nick, $description, $email, $tag);
+$logger->info("Registered with gateway as $nick (no commands)");
 
 # -----------------------------------------------------------------------
-# Main loop
+# Shutdown handler — unregister on exit
 # -----------------------------------------------------------------------
-my $reconnect_delay = 5;
-create_client();
+my $running = 1;
 
-while (1) {
-    if ($client->connect()) {
-        $reconnect_delay = 5;
-        $logger->info("Connected as $nick");
+$SIG{INT} = $SIG{TERM} = sub {
+    $logger->info("Caught signal, shutting down...");
+    $running = 0;
+};
 
-        while ($client->is_connected()) {
-            $client->poll(500);
-        }
-        $logger->warn("Disconnected");
-    } else {
-        $logger->error("Failed to connect");
+END {
+    if (defined $gateway && defined $nick) {
+        $logger->info("Unregistering $nick from gateway");
+        eval { $gateway->unregister($nick) };
     }
-
-    $logger->info("Reconnecting in ${reconnect_delay}s...");
-    sleep($reconnect_delay);
-    $reconnect_delay = ($reconnect_delay * 2 > 300) ? 300 : $reconnect_delay * 2;
-    create_client();
 }
 
 # -----------------------------------------------------------------------
-# PM handler — relay to all other ops
+# Relay helper — send a PM to all online ops
 # -----------------------------------------------------------------------
-
-sub handle_pm {
-    my ($from_nick, $message) = @_;
-    $logger->info("OP message from $from_nick: $message");
-    relay_to_ops("<$from_nick> $message", $from_nick);
-}
-
-sub get_online_ops {
-    my @ops;
-    eval {
-        my $ua = $gateway->{ua};
-        my $url = "$gateway->{base_url}/api/v1/users";
-        my $req = HTTP::Request->new(GET => $url);
-        $req->header('X-API-Key' => $gateway->{api_key});
-        my $res = $ua->request($req);
-        if ($res->is_success) {
-            my $data = decode_json($res->decoded_content);
-            for my $user (@{$data->{users} || []}) {
-                push @ops, $user->{nick} if $user->{is_op};
-            }
-        }
-    };
-    $logger->warn("Failed to get ops: $@") if $@;
-    return @ops;
-}
 
 sub relay_to_ops {
     my ($message, $exclude_nick) = @_;
-    my @ops = get_online_ops();
+    my $data;
+    eval { $data = $gateway->get_users() };
+    if ($@) {
+        $logger->warn("Failed to get users: $@");
+        return;
+    }
+    return unless $data && ref $data->{users} eq 'ARRAY';
 
-    for my $op (@ops) {
-        next if defined $exclude_nick && $op eq $exclude_nick;
-        next if $op eq $nick;
-        $client->send_pm($op, $message);
+    for my $user (@{$data->{users}}) {
+        next unless $user->{is_op};
+        next if defined $exclude_nick && $user->{nick} eq $exclude_nick;
+        next if $user->{nick} eq $nick;
+        $gateway->send_pm($nick, $user->{nick}, $message);
     }
 }
+
+# -----------------------------------------------------------------------
+# Main loop — SSE event stream with reconnect
+# -----------------------------------------------------------------------
+my $reconnect_delay = 2;
+
+while ($running) {
+    $logger->info("Connecting to gateway event stream...");
+
+    eval {
+        $gateway->event_stream($nick, sub {
+            my ($event) = @_;
+            my $from = $event->{from_nick} // return;
+            my $msg  = $event->{message}   // return;
+
+            $logger->info("OP message from $from: $msg");
+            relay_to_ops("<$from> $msg", $from);
+        });
+    };
+
+    last unless $running;
+
+    # event_stream returns when the connection drops
+    $logger->warn("Event stream disconnected, reconnecting in ${reconnect_delay}s...");
+    sleep($reconnect_delay);
+    $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
+}
+
+$logger->info("Main loop exited, shutting down");

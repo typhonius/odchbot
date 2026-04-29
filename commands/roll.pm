@@ -1,4 +1,4 @@
-package commands_v4::roll;
+package commands::roll;
 use strict; use warnings;
 
 sub name { 'roll' }
@@ -6,7 +6,7 @@ sub aliases { () }
 sub help { '!roll [NdS] — Roll dice (e.g. !roll 2d6)' }
 
 sub run {
-    my ($from_nick, $args, $client, $gateway) = @_;
+    my ($from_nick, $args, $gateway) = @_;
     my ($count, $sides) = ($args =~ /^(\d+)?d(\d+)$/i);
     $count ||= 1; $sides ||= 6;
     $count = 10 if $count > 10;
