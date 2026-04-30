@@ -17,7 +17,7 @@ sub new {
     my $self = bless {
         base_url => $opts{url} || 'http://127.0.0.1:3000',
         api_key  => $opts{api_key} || '',
-        ua       => LWP::UserAgent->new(timeout => 10),
+        ua       => LWP::UserAgent->new(timeout => 10, keep_alive => 1),
     }, $class;
     $self->{base_url} =~ s/\/+$//;
     return $self;
