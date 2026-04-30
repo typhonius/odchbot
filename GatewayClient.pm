@@ -61,25 +61,30 @@ sub _parse_response {
 # Register bot with gateway — creates a virtual user on the hub
 sub register {
     my ($self, $nick, $description, $email, $tag, @commands) = @_;
-    return $self->_post('/register', {
+    my $result = $self->_post('/register', {
         nick        => $nick,
         description => $description,
         email       => $email,
         tag         => $tag,
         commands    => \@commands,
     });
+    if ($result && $result->{token}) {
+        $self->{bot_token} = $result->{token};
+    }
+    return $result;
 }
 
 # Unregister bot — removes the virtual user
 sub unregister {
     my ($self, $nick) = @_;
-    return $self->_delete('/register', { nick => $nick });
+    return $self->_delete('/register', { nick => $nick, token => $self->{bot_token} });
 }
 
 # Poll for pending commands dispatched to this bot
 sub poll_commands {
     my ($self, $nick) = @_;
-    return $self->_get("/commands/pending?nick=$nick");
+    my $token = $self->{bot_token} // '';
+    return $self->_get("/commands/pending?nick=$nick&token=$token");
 }
 
 # Connect to SSE event stream for real-time command delivery.
@@ -89,7 +94,8 @@ sub event_stream {
     my ($self, $nick, $on_command) = @_;
     require HTTP::Tiny;
     my $http = HTTP::Tiny->new(timeout => 0);
-    my $url = "$self->{base_url}/api/v1/bot/events?nick=$nick";
+    my $token = $self->{bot_token} // '';
+    my $url = "$self->{base_url}/api/v1/bot/events?nick=$nick&token=$token";
     my $buf = '';
 
     $http->request('GET', $url, {
@@ -122,6 +128,7 @@ sub send_chat {
     return $self->_post('/chat', {
         nick    => $nick,
         message => $message,
+        token   => $self->{bot_token},
     });
 }
 
@@ -132,6 +139,7 @@ sub send_pm {
         from    => $from,
         to      => $to,
         message => $message,
+        token   => $self->{bot_token},
     });
 }
 
