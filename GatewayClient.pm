@@ -89,37 +89,73 @@ sub poll_commands {
 
 # Connect to SSE event stream for real-time command delivery.
 # Calls $on_command->($cmd_hashref) for each command event.
+# Calls $on_pm->($event_hashref) for each PM event (optional).
 # Blocks until the connection drops; caller should reconnect.
 sub event_stream {
-    my ($self, $nick, $on_command) = @_;
-    require HTTP::Tiny;
-    my $http = HTTP::Tiny->new(timeout => 0);
-    my $token = $self->{bot_token} // '';
-    my $url = "$self->{base_url}/api/v1/bot/events?nick=$nick&token=$token";
-    my $buf = '';
+    my ($self, $nick, $on_command, $on_pm) = @_;
+    require IO::Socket::INET;
 
-    $http->request('GET', $url, {
-        headers => {
-            'X-API-Key' => $self->{api_key},
-            'Accept'    => 'text/event-stream',
-        },
-        data_callback => sub {
-            my ($chunk) = @_;
-            $buf .= $chunk;
-            while ($buf =~ s/^(.*?\n\n)//s) {
-                my $block = $1;
-                my ($event, $data);
-                for my $line (split /\n/, $block) {
-                    if ($line =~ /^event:\s*(.+)/) { $event = $1; }
-                    elsif ($line =~ /^data:\s*(.+)/) { $data = $1; }
-                }
-                if (defined $event && $event eq 'command' && defined $data) {
-                    my $cmd = eval { decode_json($data) };
-                    $on_command->($cmd) if $cmd && !$@;
-                }
+    my $token = $self->{bot_token} // '';
+
+    # Parse host/port from base_url
+    my ($host, $port) = $self->{base_url} =~ m{^https?://([^:/]+)(?::(\d+))?};
+    $host //= '127.0.0.1';
+    $port //= 80;
+
+    my $sock = IO::Socket::INET->new(
+        PeerAddr => $host,
+        PeerPort => $port,
+        Proto    => 'tcp',
+        Timeout  => 10,
+    ) or do {
+        $logger->error("SSE connect failed: $!");
+        return;
+    };
+
+    # Send HTTP request
+    my $path = "/api/v1/bot/events?nick=$nick&token=$token";
+    print $sock "GET $path HTTP/1.1\r\n";
+    print $sock "Host: $host:$port\r\n";
+    print $sock "X-API-Key: $self->{api_key}\r\n";
+    print $sock "Accept: text/event-stream\r\n";
+    print $sock "Connection: keep-alive\r\n";
+    print $sock "\r\n";
+
+    # Skip HTTP headers
+    while (my $line = <$sock>) {
+        $line =~ s/\r?\n$//;
+        last if $line eq '';
+    }
+
+    # Read SSE events
+    my $event = '';
+    my $data = '';
+    while (my $line = <$sock>) {
+        $line =~ s/\r?\n$//;
+
+        if ($line =~ /^event:\s*(.+)/) {
+            $event = $1;
+        }
+        elsif ($line =~ /^data:\s*(.+)/) {
+            $data = $1;
+        }
+        elsif ($line eq '' && $event ne '') {
+            # End of SSE block
+            if ($event eq 'command' && $data ne '') {
+                my $cmd = eval { decode_json($data) };
+                $on_command->($cmd) if $cmd && !$@;
             }
-        },
-    });
+            elsif ($event eq 'pm' && $data ne '' && $on_pm) {
+                my $pm = eval { decode_json($data) };
+                $on_pm->($pm) if $pm && !$@;
+            }
+            $event = '';
+            $data = '';
+        }
+        # SSE comments (keepalive) are just ignored
+    }
+
+    close $sock;
 }
 
 # Send a chat message as the bot

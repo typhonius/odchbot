@@ -122,14 +122,17 @@ while ($running) {
     $logger->info("Connecting to gateway event stream...");
 
     eval {
-        $gateway->event_stream($nick, sub {
-            my ($event) = @_;
-            my $from = $event->{from_nick} // return;
-            my $msg  = $event->{message}   // return;
+        $gateway->event_stream($nick,
+            sub { },  # on_command — OPChat doesn't handle commands
+            sub {      # on_pm — relay to all ops
+                my ($event) = @_;
+                my $from = $event->{from_nick} // return;
+                my $msg  = $event->{message}   // return;
 
-            $logger->info("OP message from $from: $msg");
-            relay_to_ops("<$from> $msg", $from);
-        });
+                $logger->info("OP message from $from: $msg");
+                relay_to_ops("<$from> $msg", $from);
+            },
+        );
     };
 
     last unless $running;
