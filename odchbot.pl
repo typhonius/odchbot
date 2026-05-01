@@ -172,7 +172,8 @@ sub dispatch_command {
     my $module = $commands{$cmd};
     return undef unless $module;
 
-    my $response = eval { $module->run($from_nick, $args, $gateway) };
+    my $run = $module->can('run');
+    my $response = eval { $run->($from_nick, $args, $gateway) };
     if ($@) {
         $logger->warn("Command $cmd error: $@");
         return "Error running !$cmd";
