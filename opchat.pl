@@ -71,8 +71,18 @@ my $gateway = GatewayClient->new(
 # -----------------------------------------------------------------------
 # Register with gateway — no commands (OPChat only receives PMs)
 # -----------------------------------------------------------------------
-$gateway->register($nick, $description, $email, $tag);
-$logger->info("Registered with gateway as $nick (no commands)");
+sub do_register {
+    my $result = $gateway->register($nick, $description, $email, $tag);
+    if ($result && $result->{token}) {
+        $logger->info("Registered with gateway as $nick (no commands)");
+        return 1;
+    } else {
+        $logger->warn("Registration failed");
+        return 0;
+    }
+}
+
+do_register() or die "Initial registration failed\n";
 
 # -----------------------------------------------------------------------
 # Shutdown handler — unregister on exit
@@ -114,7 +124,7 @@ sub relay_to_ops {
 }
 
 # -----------------------------------------------------------------------
-# Main loop — SSE event stream with reconnect
+# Main loop — SSE event stream with reconnect + re-register
 # -----------------------------------------------------------------------
 my $reconnect_delay = 2;
 
@@ -140,6 +150,14 @@ while ($running) {
     # event_stream returns when the connection drops
     $logger->warn("Event stream disconnected, reconnecting in ${reconnect_delay}s...");
     sleep($reconnect_delay);
+
+    # Re-register — gateway may have restarted, wiping our token
+    unless (do_register()) {
+        $logger->warn("Re-registration failed, will retry...");
+    } else {
+        $reconnect_delay = 2;
+    }
+
     $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
 }
 

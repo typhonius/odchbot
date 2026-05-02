@@ -104,8 +104,19 @@ $logger->info("Loaded " . scalar(keys %commands) . " commands: " . join(', ', so
 # Register with gateway — declare bot identity and commands
 # -----------------------------------------------------------------------
 my @all_cmds = (keys %commands, keys %aliases);
-$gateway->register($nick, $description, $email, $tag, @all_cmds);
-$logger->info("Registered with gateway as $nick, claiming " . scalar(@all_cmds) . " commands");
+
+sub do_register {
+    my $result = $gateway->register($nick, $description, $email, $tag, @all_cmds);
+    if ($result && $result->{token}) {
+        $logger->info("Registered with gateway as $nick, claiming " . scalar(@all_cmds) . " commands");
+        return 1;
+    } else {
+        $logger->warn("Registration failed");
+        return 0;
+    }
+}
+
+do_register() or die "Initial registration failed\n";
 
 # -----------------------------------------------------------------------
 # Shutdown handler — unregister on exit
@@ -125,7 +136,7 @@ END {
 }
 
 # -----------------------------------------------------------------------
-# Main loop — SSE event stream with reconnect
+# Main loop — SSE event stream with reconnect + re-register
 # -----------------------------------------------------------------------
 my $reconnect_delay = 2;
 
@@ -153,6 +164,15 @@ while ($running) {
     # event_stream returns when the connection drops
     $logger->warn("Event stream disconnected, reconnecting in ${reconnect_delay}s...");
     sleep($reconnect_delay);
+
+    # Re-register on reconnect — gateway may have restarted, wiping the
+    # in-memory bot registry and invalidating our token.
+    unless (do_register()) {
+        $logger->warn("Re-registration failed, will retry...");
+    } else {
+        $reconnect_delay = 2;  # reset backoff on successful re-register
+    }
+
     $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
 }
 
