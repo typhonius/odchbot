@@ -70,6 +70,7 @@ sub register {
     });
     if ($result && $result->{token}) {
         $self->{bot_token} = $result->{token};
+        $self->{bot_nick} = $nick;
     }
     return $result;
 }
@@ -158,7 +159,7 @@ sub event_stream {
     close $sock;
 }
 
-# Send a chat message as the bot
+# Send a chat message as the bot (explicit nick)
 sub send_chat {
     my ($self, $nick, $message) = @_;
     return $self->_post('/chat', {
@@ -166,6 +167,12 @@ sub send_chat {
         message => $message,
         token   => $self->{bot_token},
     });
+}
+
+# Send a chat message using the registered bot nick
+sub chat {
+    my ($self, $message) = @_;
+    return $self->send_chat($self->{bot_nick}, $message);
 }
 
 # Send a private message as a bot
