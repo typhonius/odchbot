@@ -35,7 +35,26 @@ our $VERSION = '4.0.0';
     }
 }
 my $logger = Log::Log4perl->get_logger('ODCHBot');
-$logger->info("Dragon v$VERSION starting");
+
+# -----------------------------------------------------------------------
+# PID file — prevent duplicate instances
+# -----------------------------------------------------------------------
+my $pidfile = "$FindBin::Bin/dragon.pid";
+if (-f $pidfile) {
+    open my $fh, '<', $pidfile;
+    my $old_pid = <$fh>;
+    close $fh;
+    chomp($old_pid) if $old_pid;
+    if ($old_pid && kill(0, $old_pid)) {
+        $logger->fatal("Another instance is already running (PID $old_pid). Exiting.");
+        die "Another instance is already running (PID $old_pid)\n";
+    }
+}
+open my $pidfh, '>', $pidfile or die "Cannot write $pidfile: $!";
+print $pidfh $$;
+close $pidfh;
+
+$logger->info("Dragon v$VERSION starting (PID $$)");
 
 # -----------------------------------------------------------------------
 # Load config
@@ -101,14 +120,25 @@ if (-d $cmd_dir) {
 $logger->info("Loaded " . scalar(keys %commands) . " commands: " . join(', ', sort keys %commands));
 
 # -----------------------------------------------------------------------
-# Register with gateway — declare bot identity and commands
+# Register with gateway — declare bot identity, commands, and event subs
 # -----------------------------------------------------------------------
 my @all_cmds = (keys %commands, keys %aliases);
+my @event_subs = qw(command pm chat user_join user_quit user_info kick ban unban gag ungag
+                     hub_name op_list gateway_status maintenance_tick);
 
 sub do_register {
-    my $result = $gateway->register($nick, $description, $email, $tag, @all_cmds);
+    my $result = $gateway->register(
+        nick        => $nick,
+        description => $description,
+        email       => $email,
+        tag         => $tag,
+        commands    => \@all_cmds,
+        events      => \@event_subs,
+    );
     if ($result && $result->{token}) {
-        $logger->info("Registered with gateway as $nick, claiming " . scalar(@all_cmds) . " commands");
+        $logger->info("Registered with gateway as $nick, claiming "
+            . scalar(@all_cmds) . " commands, "
+            . scalar(@event_subs) . " event subscriptions");
         return 1;
     } else {
         $logger->warn("Registration failed");
@@ -133,6 +163,7 @@ END {
         $logger->info("Unregistering $nick from gateway");
         eval { $gateway->unregister($nick) };
     }
+    unlink $pidfile if defined $pidfile;
 }
 
 # -----------------------------------------------------------------------
@@ -145,16 +176,99 @@ while ($running) {
 
     eval {
         $gateway->event_stream($nick, sub {
-            my ($cmd_event) = @_;
-            my $from = $cmd_event->{from_nick} // '';
-            my $cmd  = $cmd_event->{command} // '';
-            my $args = $cmd_event->{args} // '';
+            my ($event_type, $event_data) = @_;
 
-            $logger->debug("Command from $from: !$cmd $args");
+            if ($event_type eq 'command') {
+                my $from = $event_data->{from_nick} // '';
+                my $cmd  = $event_data->{command} // '';
+                my $args = $event_data->{args} // '';
 
-            my $response = dispatch_command($from, $cmd, $args);
-            if (defined $response) {
-                $gateway->send_chat($nick, $response);
+                $logger->debug("Command from $from: !$cmd $args");
+
+                my $response = dispatch_command($from, $cmd, $args);
+                if (defined $response) {
+                    $gateway->send_chat($nick, $response);
+                }
+            }
+            elsif ($event_type eq 'pm') {
+                my $from = $event_data->{from_nick} // '';
+                my $msg  = $event_data->{message} // '';
+                $logger->debug("PM from $from: $msg");
+            }
+            elsif ($event_type eq 'chat') {
+                my $who = $event_data->{nick} // '';
+                my $msg = $event_data->{message} // '';
+                $logger->trace("Chat <$who> $msg");
+            }
+            elsif ($event_type eq 'user_join') {
+                my $who = $event_data->{nick} // return;
+                $logger->info("User joined: $who");
+                $gateway->send_chat($nick, "Welcome to the hub, $who!");
+            }
+            elsif ($event_type eq 'user_quit') {
+                my $who = $event_data->{nick} // return;
+                $logger->info("User quit: $who");
+            }
+            elsif ($event_type eq 'user_info') {
+                my $who   = $event_data->{nick} // '';
+                my $share = $event_data->{share} // 0;
+                $logger->trace("UserInfo update: $who (share: $share)");
+            }
+            elsif ($event_type eq 'kick') {
+                my $who = $event_data->{nick} // '';
+                my $by  = $event_data->{by} // '';
+                $logger->info("$who was kicked by $by");
+            }
+            elsif ($event_type eq 'ban') {
+                my $who    = $event_data->{nick} // '';
+                my $by     = $event_data->{by} // '';
+                my $reason = $event_data->{reason} // '';
+                $logger->info("$who was banned by $by: $reason");
+            }
+            elsif ($event_type eq 'unban') {
+                my $who = $event_data->{nick} // '';
+                my $by  = $event_data->{by} // '';
+                $logger->info("$who was unbanned by $by");
+            }
+            elsif ($event_type eq 'gag') {
+                my $who    = $event_data->{nick} // '';
+                my $by     = $event_data->{by} // '';
+                my $reason = $event_data->{reason} // '';
+                $logger->info("$who was gagged by $by: $reason");
+            }
+            elsif ($event_type eq 'ungag') {
+                my $who = $event_data->{nick} // '';
+                my $by  = $event_data->{by} // '';
+                $logger->info("$who was ungagged by $by");
+            }
+            elsif ($event_type eq 'hub_name') {
+                my $name = $event_data->{name} // '';
+                $logger->info("Hub name changed to: $name");
+            }
+            elsif ($event_type eq 'op_list') {
+                my $ops = $event_data->{ops} // [];
+                $logger->debug("Op list updated: " . join(', ', @$ops));
+            }
+            elsif ($event_type eq 'gateway_status') {
+                my $connected = $event_data->{connected} // 0;
+                my $msg       = $event_data->{message} // '';
+                if ($connected) {
+                    $logger->info("Gateway connected: $msg");
+                    $gateway->send_chat($nick, "I'm back! Gateway reconnected.");
+                } else {
+                    $logger->warn("Gateway disconnected: $msg");
+                }
+            }
+            elsif ($event_type eq 'maintenance_tick') {
+                # Periodic tick — use for scheduled tasks (reminders, cleanup, etc.)
+                $logger->trace("Maintenance tick");
+                check_reminders();
+            }
+            elsif ($event_type eq 'error') {
+                $logger->warn("SSE error: " . ($event_data->{message} // 'unknown'));
+            }
+            else {
+                $logger->trace("Event: $event_type");
             }
         });
     };
@@ -167,16 +281,31 @@ while ($running) {
 
     # Re-register on reconnect — gateway may have restarted, wiping the
     # in-memory bot registry and invalidating our token.
-    unless (do_register()) {
-        $logger->warn("Re-registration failed, will retry...");
-    } else {
+    if (do_register()) {
         $reconnect_delay = 2;  # reset backoff on successful re-register
+    } else {
+        $logger->warn("Re-registration failed, will retry...");
+        $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
     }
-
-    $reconnect_delay = ($reconnect_delay * 2 > 60) ? 60 : $reconnect_delay * 2;
 }
 
 $logger->info("Main loop exited, shutting down");
+
+# -----------------------------------------------------------------------
+# Maintenance tick — periodic tasks driven by gateway's maintenance_tick event.
+# Default tick interval is 60s (configurable in gateway config.toml).
+# -----------------------------------------------------------------------
+my $tick_count = 0;
+my $REMINDER_INTERVAL = 15;  # ticks between reminders (15 ticks * 60s = 15 minutes)
+
+sub check_reminders {
+    $tick_count++;
+    if ($tick_count >= $REMINDER_INTERVAL) {
+        $tick_count = 0;
+        # Example: periodic hub announcement
+        $gateway->send_chat($nick, "Reminder: type !help to see available commands.");
+    }
+}
 
 # -----------------------------------------------------------------------
 # Command dispatch

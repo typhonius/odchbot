@@ -28,6 +28,7 @@ sub _request {
     my $url = "$self->{base_url}/api/v1$prefix$path";
     my $req = HTTP::Request->new($method => $url);
     $req->header('X-API-Key' => $self->{api_key});
+    $req->header('X-Bot-Token' => $self->{bot_token}) if $self->{bot_token};
     if ($body) {
         $req->header('Content-Type' => 'application/json');
         $req->content(encode_json($body));
@@ -58,15 +59,18 @@ sub _parse_response {
 # Bot Platform API
 # -----------------------------------------------------------------------
 
-# Register bot with gateway — creates a virtual user on the hub
+# Register bot with gateway — creates a virtual user on the hub.
+# Options hash: commands => [...], events => [...]
 sub register {
-    my ($self, $nick, $description, $email, $tag, @commands) = @_;
+    my ($self, %opts) = @_;
+    my $nick = $opts{nick} or return undef;
     my $result = $self->_post('/register', {
         nick        => $nick,
-        description => $description,
-        email       => $email,
-        tag         => $tag,
-        commands    => \@commands,
+        description => $opts{description} // '',
+        email       => $opts{email} // '',
+        tag         => $opts{tag} // '',
+        commands    => $opts{commands} // [],
+        events      => $opts{events} // [],
     });
     if ($result && $result->{token}) {
         $self->{bot_token} = $result->{token};
@@ -81,20 +85,19 @@ sub unregister {
     return $self->_delete('/register', { nick => $nick, token => $self->{bot_token} });
 }
 
-# Poll for pending commands dispatched to this bot
+# Poll for pending events dispatched to this bot
 sub poll_commands {
     my ($self, $nick) = @_;
-    my $token = $self->{bot_token} // '';
-    return $self->_get("/commands/pending?nick=$nick&token=$token");
+    return $self->_get("/commands/pending?nick=$nick");
 }
 
-# Connect to SSE event stream for real-time command delivery.
-# Calls $on_command->($cmd_hashref) for each command event.
-# Calls $on_pm->($event_hashref) for each PM event (optional).
+# Connect to SSE event stream for real-time event delivery.
+# Calls $on_event->($event_type, $data_hashref) for each event.
 # Blocks until the connection drops; caller should reconnect.
 sub event_stream {
-    my ($self, $nick, $on_command, $on_pm) = @_;
+    my ($self, $nick, $on_event) = @_;
     require IO::Socket::INET;
+    require URI::Escape;
 
     my $token = $self->{bot_token} // '';
 
@@ -113,16 +116,31 @@ sub event_stream {
         return;
     };
 
-    # Send HTTP request
-    my $path = "/api/v1/bot/events?nick=$nick&token=$token";
+    # Read timeout — if no data (including keepalives) for 120s, assume dead connection
+    $sock->timeout(120);
+
+    # Send HTTP request — token in header, not URL
+    my $enc_nick = URI::Escape::uri_escape($nick);
+    my $path = "/api/v1/bot/events?nick=$enc_nick";
     print $sock "GET $path HTTP/1.1\r\n";
     print $sock "Host: $host:$port\r\n";
     print $sock "X-API-Key: $self->{api_key}\r\n";
+    print $sock "X-Bot-Token: $token\r\n";
     print $sock "Accept: text/event-stream\r\n";
     print $sock "Connection: keep-alive\r\n";
     print $sock "\r\n";
 
-    # Skip HTTP headers
+    # Read status line and check for success
+    my $status_line = <$sock>;
+    unless ($status_line && $status_line =~ m{^HTTP/\S+\s+200\b}) {
+        $status_line //= '(no response)';
+        chomp $status_line;
+        $logger->error("SSE request failed: $status_line");
+        close $sock;
+        return;
+    }
+
+    # Skip remaining HTTP headers
     while (my $line = <$sock>) {
         $line =~ s/\r?\n$//;
         last if $line eq '';
@@ -138,22 +156,19 @@ sub event_stream {
             $event = $1;
         }
         elsif ($line =~ /^data:\s*(.+)/) {
-            $data = $1;
+            # SSE spec: multiple data lines are joined with newlines
+            $data = ($data ne '') ? "$data\n$1" : $1;
         }
         elsif ($line eq '' && $event ne '') {
             # End of SSE block
-            if ($event eq 'command' && $data ne '') {
-                my $cmd = eval { decode_json($data) };
-                $on_command->($cmd) if $cmd && !$@;
-            }
-            elsif ($event eq 'pm' && $data ne '' && $on_pm) {
-                my $pm = eval { decode_json($data) };
-                $on_pm->($pm) if $pm && !$@;
+            if ($data ne '') {
+                my $parsed = eval { decode_json($data) };
+                $on_event->($event, $parsed) if $parsed && !$@;
             }
             $event = '';
             $data = '';
         }
-        # SSE comments (keepalive) are just ignored
+        # SSE comments (:keepalive) are just ignored
     }
 
     close $sock;

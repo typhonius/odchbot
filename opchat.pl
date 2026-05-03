@@ -72,9 +72,15 @@ my $gateway = GatewayClient->new(
 # Register with gateway — no commands (OPChat only receives PMs)
 # -----------------------------------------------------------------------
 sub do_register {
-    my $result = $gateway->register($nick, $description, $email, $tag);
+    my $result = $gateway->register(
+        nick        => $nick,
+        description => $description,
+        email       => $email,
+        tag         => $tag,
+        events      => [qw(pm)],
+    );
     if ($result && $result->{token}) {
-        $logger->info("Registered with gateway as $nick (no commands)");
+        $logger->info("Registered with gateway as $nick (subscribed to pm)");
         return 1;
     } else {
         $logger->warn("Registration failed");
@@ -132,17 +138,17 @@ while ($running) {
     $logger->info("Connecting to gateway event stream...");
 
     eval {
-        $gateway->event_stream($nick,
-            sub { },  # on_command — OPChat doesn't handle commands
-            sub {      # on_pm — relay to all ops
-                my ($event) = @_;
-                my $from = $event->{from_nick} // return;
-                my $msg  = $event->{message}   // return;
+        $gateway->event_stream($nick, sub {
+            my ($event_type, $event_data) = @_;
+
+            if ($event_type eq 'pm') {
+                my $from = $event_data->{from_nick} // return;
+                my $msg  = $event_data->{message}   // return;
 
                 $logger->info("OP message from $from: $msg");
                 relay_to_ops("<$from> $msg", $from);
-            },
-        );
+            }
+        });
     };
 
     last unless $running;
