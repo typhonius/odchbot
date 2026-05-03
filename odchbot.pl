@@ -203,12 +203,7 @@ while ($running) {
             elsif ($event_type eq 'user_join') {
                 my $who = $event_data->{nick} // return;
                 $logger->info("User joined: $who");
-                my $user = $gateway->get_user($who);
-                if ($user && ($user->{permission} // 0) >= 3) {
-                    $gateway->send_chat($nick, "All hail $who!");
-                } else {
-                    $gateway->send_chat($nick, "Welcome to the hub, $who!");
-                }
+                on_user_join($who);
             }
             elsif ($event_type eq 'user_quit') {
                 my $who = $event_data->{nick} // return;
@@ -293,6 +288,24 @@ while ($running) {
 }
 
 $logger->info("Main loop exited, shutting down");
+
+# -----------------------------------------------------------------------
+# User join handler
+# -----------------------------------------------------------------------
+
+sub on_user_join {
+    my ($who) = @_;
+    my $user = $gateway->get_user($who);
+    my $perm = $user ? ($user->{permission} // 0) : 0;
+
+    if ($perm >= 3) {
+        $gateway->send_chat($nick, "All hail $who!");
+    } elsif ($perm >= 2) {
+        $gateway->send_chat($nick, "Welcome back, $who.");
+    } else {
+        $gateway->send_chat($nick, "Welcome to the hub, $who!");
+    }
+}
 
 # -----------------------------------------------------------------------
 # Command dispatch
