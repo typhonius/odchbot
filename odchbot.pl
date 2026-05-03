@@ -203,7 +203,12 @@ while ($running) {
             elsif ($event_type eq 'user_join') {
                 my $who = $event_data->{nick} // return;
                 $logger->info("User joined: $who");
-                $gateway->send_chat($nick, "Welcome to the hub, $who!");
+                my $user = $gateway->get_user($who);
+                if ($user && ($user->{permission} // 0) >= 3) {
+                    $gateway->send_chat($nick, "All hail $who!");
+                } else {
+                    $gateway->send_chat($nick, "Welcome to the hub, $who!");
+                }
             }
             elsif ($event_type eq 'user_quit') {
                 my $who = $event_data->{nick} // return;

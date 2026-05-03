@@ -210,6 +210,11 @@ sub get_users {
     return $self->_request('GET', '', '/users');
 }
 
+sub get_user {
+    my ($self, $nick) = @_;
+    return $self->_request('GET', '/bot', "/users/$nick");
+}
+
 sub kick_user {
     my ($self, $nick, $reason) = @_;
     return $self->_request('POST', '', "/users/$nick/kick", { reason => $reason || '' });
