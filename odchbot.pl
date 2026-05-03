@@ -260,9 +260,7 @@ while ($running) {
                 }
             }
             elsif ($event_type eq 'maintenance_tick') {
-                # Periodic tick — use for scheduled tasks (reminders, cleanup, etc.)
                 $logger->trace("Maintenance tick");
-                check_reminders();
             }
             elsif ($event_type eq 'error') {
                 $logger->warn("SSE error: " . ($event_data->{message} // 'unknown'));
@@ -290,22 +288,6 @@ while ($running) {
 }
 
 $logger->info("Main loop exited, shutting down");
-
-# -----------------------------------------------------------------------
-# Maintenance tick — periodic tasks driven by gateway's maintenance_tick event.
-# Default tick interval is 60s (configurable in gateway config.toml).
-# -----------------------------------------------------------------------
-my $tick_count = 0;
-my $REMINDER_INTERVAL = 15;  # ticks between reminders (15 ticks * 60s = 15 minutes)
-
-sub check_reminders {
-    $tick_count++;
-    if ($tick_count >= $REMINDER_INTERVAL) {
-        $tick_count = 0;
-        # Example: periodic hub announcement
-        $gateway->send_chat($nick, "Reminder: type !help to see available commands.");
-    }
-}
 
 # -----------------------------------------------------------------------
 # Command dispatch
